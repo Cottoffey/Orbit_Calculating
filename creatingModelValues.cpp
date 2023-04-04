@@ -1,0 +1,260 @@
+#include <sofa.h>
+#include <iostream>
+#include <fstream>
+#include <cmath>
+#include <string>
+#include <vector>
+#include <iomanip>
+
+#include "Ephemeris.h"
+
+#define GMS  132712440043.85333
+#define GMJ  126712764.13345
+#define GME  398600.43552
+#define GMV  324858.59200
+#define GMST 37940585.20000
+#define GMU  5794556.46575
+#define GMN  6836527.10058
+
+#define LSD 25902068371200.0 // light speed in km/day
+#define LS 299792.458        // light speed in km/s
+#define KM_TO_AU 6.68459e-9  // 1 km = .. au
+
+void DP5(int n, std::vector<double> & x, double &t, double h, PlanetEphemeris *data, void f(int, std::vector<double> &, const double &, double *, PlanetEphemeris *))
+{
+    std::vector<double> xmid (n);
+    double tmid;
+    double *k = new double[6 * n];
+
+    f(n, x, t, &k[0], data);
+
+    for (int i = 0; i < n; i++)
+        xmid[i] = x[i] + h * k[0 + i] / 5.0;
+    tmid = t + h / 5.0;
+    f(n, xmid, tmid, &k[1 * n], data);
+
+    for (int i = 0; i < n; i++)
+        xmid[i] = x[i] + h * (k[0 + i] * 3.0 / 40.0 + k[1 * n + i] * 9.0 / 40.0);
+    tmid = t + h * 3.0 / 10.0;
+    f(n, xmid, tmid, &k[2 * n], data);
+
+    for (int i = 0; i < n; i++)
+        xmid[i] = x[i] + h * (k[0 + i] * 44.0 / 45.0 - k[1 * n + i] * 56.0 / 15.0 + k[2 * n + i] * 32.0 / 9.0);
+    tmid = t + h * 4.0 / 5.0;
+    f(n, xmid, tmid, &k[3 * n], data);
+
+    for (int i = 0; i < n; i++)
+        xmid[i] = x[i] + h * (k[0 + i] * 19372.0 / 6561.0 - k[1 * n + i] * 25360.0 / 2187.0 + k[2 * n + i] * 64448.0 / 6561.0 - k[3 * n + i] * 212.0 / 729.0);
+    tmid = t + h * 8.0 / 9.0;
+    f(n, xmid, tmid, &k[4 * n], data);
+
+    for (int i = 0; i < n; i++)
+        xmid[i] = x[i] + h * (k[0 + i] * 9017.0 / 3168.0 - k[1 * n + i] * 355.0 / 33.0 + k[2 * n + i] * 46732.0 / 5247.0 + k[3 * n + i] * 49.0 / 176.0 - k[4 * n + i] * 5103.0 / 18656.0);
+    tmid = t + h;
+    f(n, xmid, tmid, &k[5 * n], data);
+
+    for (int i = 0; i < n; i++)
+        x[i] = x[i] + h * (k[0 + i] * 35.0 / 384.0 + k[2 * n + i] * 500.0 / 1113.0 + k[3 * n + i] * 125.0 / 192.0 - k[4 * n + i] * 2187.0 / 6784.0 + k[5 * n + i] * 11.0 / 84.0);
+
+    delete[] k;
+}
+
+void function(int n, std::vector<double> & X, const double &t, double *result, PlanetEphemeris *data)
+{
+    result[0] = X[3];
+    result[1] = X[4];
+    result[2] = X[5];
+    result[3] = 0.0;
+    result[4] = 0.0;
+    result[5] = 0.0;
+
+    double x, y, z, R;
+
+    for (int i = 0; i < 7; i++)
+    {
+        data[i].get_coors(t, x, y, z);
+        R = sqrt((X[0] - x) * (X[0] - x) + (X[1] - y) * (X[1] - y) + (X[2] - z) * (X[2] - z));
+
+        result[3] = result[3] + 86400.L * 86400.L * (data[i].GM * (x - X[0]) / (R * R * R));
+        result[4] = result[4] + 86400.L * 86400.L * (data[i].GM * (y - X[1]) / (R * R * R));
+        result[5] = result[5] + 86400.L * 86400.L * (data[i].GM * (z - X[2]) / (R * R * R));
+    }
+}
+
+void modeling (std::vector<double> X, double h)
+{
+    PlanetEphemeris sun;
+    PlanetEphemeris jupiter;
+    PlanetEphemeris venus;
+    PlanetEphemeris uranus;
+    PlanetEphemeris neptune;
+    PlanetEphemeris saturn;
+    PlanetEphemeris eartht;
+    PlanetEphemeris RealOrbit;
+
+
+    jupiter.init ("Data/Jupiter.txt");
+    eartht.init ("Data/Eartht.txt");
+    venus.init ("Data/Venus.txt");
+    uranus.init ("Data/Uranus.txt");
+    neptune.init ("Data/Neptune.txt");
+    saturn.init ("Data/Saturn.txt");
+    sun.init ("Data/Sun.txt");
+    RealOrbit.init ("Data/RealOrbit.txt");
+
+    std::cout << "Initialization success\n";
+
+    sun.GM = GMS;
+    jupiter.GM = GMJ;
+    eartht.GM = GME;
+    venus.GM = GMV;
+    uranus.GM = GMU;
+    neptune.GM = GMN;
+    saturn.GM = GMST;
+
+    PlanetEphemeris datas[7] = {sun, jupiter, eartht, venus, uranus, neptune, saturn};
+
+    std::cout.setf(std::ios::scientific);
+    
+    // start time in Julian format
+    double t = 2458040.916666667;
+
+    std::ofstream output("Data/ModelOrbit.txt");
+    output.setf(std::ios::scientific);
+
+    double x, y, z;    
+
+    while (t < 2458123.916666667)
+    {
+        RealOrbit.get_coors (t, x, y, z);
+        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
+        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
+
+        DP5(6, X, t, h, datas, function);
+
+        t += h;
+    }
+
+    output.close();
+}
+
+// light speed correction
+double LTC (double time, double * obcoors, PlanetEphemeris & object)
+{
+    double X[3];
+    double delta = 0;
+    double prevdelta = 0;
+
+    double R;
+    object.get_coors (time - delta, X[0], X[1], X[2]);
+    R = sqrt((X[0] - obcoors[0]) * (X[0] - obcoors[0]) + (X[1] - obcoors[1]) * (X[1] - obcoors[1]) + (X[2] - obcoors[2]) * (X[2] - obcoors[2]));
+    delta = R / LSD;
+
+    // Fixed-point method 
+    int i = 0;
+    while (fabs (delta - prevdelta) / delta > 1e-13)
+    {
+        prevdelta = delta;
+        object.get_coors (time - delta, X[0], X[1], X[2]);
+        R = sqrt((X[0] - obcoors[0]) * (X[0] - obcoors[0]) + (X[1] - obcoors[1]) * (X[1] - obcoors[1]) + (X[2] - obcoors[2]) * (X[2] - obcoors[2]));
+        delta = R / LSD;
+        i++;
+    }
+
+    return delta;
+}
+
+void creatingModelingValues ()
+{
+    PlanetEphemeris object;
+    PlanetEphemeris sun;
+    EarthEphemeris earth;
+
+    earth.init ("Data/Earth.txt");
+    object.init ("Data/ModelOrbit.txt");
+    sun.init ("Data/Sun.txt");
+
+    std::cout << "Iniatilization success\n";
+
+    std::ifstream input ("Data/ObservData.txt");
+    std::ofstream output ("Data/ModelingData.txt");
+    output.setf (std::ios::scientific);
+
+    double time;
+    double ocoors[3]; // object coors
+    double obcoors[3]; // observer coors
+    double scoors[3];  // sun coors
+    double p[3], q[3], e[3], p1[3], lp = 0, lq = 0, le = 0;
+    double em;
+    double tmp1, tmp;
+
+    for (int j = 0; j < 222; j++)
+    {
+        input >> time >> tmp1 >> tmp >> obcoors[0] >> obcoors[1] >> obcoors[2];
+
+        time -= LTC (time, obcoors, object);
+        // earth.get_coors (time, obcoors[0], obcoors[1], obcoors[2]);
+        object.get_coors (time, ocoors[0], ocoors[1], ocoors[2]);
+        sun.get_coors (time, scoors[0], scoors[1], scoors[2]);
+
+        // initialization for calling iauLd
+        for (int i = 0; i < 3; i++)
+        {
+            p[i] = ocoors[i] - obcoors[i];
+            q[i] = ocoors[i] - scoors[i];
+            e[i] = obcoors[i] - scoors[i];
+            lp += p[i] * p[i];
+            lq += q[i] * q[i];
+            le += e[i] * e[i];
+        }
+
+        lp = sqrt (lp);
+        lq = sqrt (lq);
+        le = sqrt (le);
+
+        for (int i = 0; i < 3; i++)
+        {
+            p[i] = p[i] / lp;
+            q[i] = q[i] / lq;
+            e[i] = e[i] / le;
+        }
+        em = sqrt ((scoors[0] - obcoors[0]) * (scoors[0] - obcoors[0]) + (scoors[1] - obcoors[1]) * (scoors[1] - obcoors[1]) + (scoors[2] - obcoors[2]) * (scoors[2] - obcoors[2])) * KM_TO_AU;
+
+        iauLd (1, p, q, e, em, 0, p1);
+
+        // Aberation 
+        double v[3], lv = 0;
+        earth.get_speed (time, v[0], v[1], v[2]);
+        for (int i = 0; i < 3; i++)
+        {
+            v[i] = v[i] / LSD;
+            lv += v[i] * v[i];
+        }
+
+        iauAb (p1, v, em, sqrt (1 - lv), p);
+
+        // to spherical
+        double ra, dec;
+        iauC2s (p, &ra, &dec);
+        if (ra < 0.0)
+            ra = 2 * M_PI + ra;
+
+        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << ' ' << ((fabs(tmp1 - ra) > M_PI) ? (fabs (tmp1 - ra) - M_PI) : fabs (tmp1 - ra)) << ' ' << ((fabs(tmp- dec) > M_PI) ? (fabs (tmp- dec) - M_PI) : fabs (tmp- dec)) <<  std::endl;
+    }
+
+    input.close();
+    output.close();
+}
+
+int main()
+{
+    std::vector<double> X = {1.468787090096414E+08,  7.299085877471100E+07,  2.053190793311784E+07,  3.860105756034324E+06,  3.247863089146682E+05,  1.492113690745696E+06};
+
+    modeling (X, 0.041666666666666667);
+    std::cout << "Modeling success\n";
+
+    creatingModelingValues ();
+    std::cout << "Creating model values success\n";
+
+    return 0;
+}
