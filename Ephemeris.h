@@ -10,10 +10,12 @@ public:
     };
 
     double GM;
+    double step;
     std::vector<struct format> data;
 
-    void init(std::string filename)
+    void init(std::string filename, double s)
     {
+        step = s;
         std::ifstream input(filename);
         if (!input.is_open())
         {
@@ -38,7 +40,7 @@ public:
         // int i = 0;
         // while (time > data[i].t)
         //     i++;
-        int i = (int)((time - 2458040.916666667) / 0.041666666667) + 1;
+        int i = (int)((time - 2458040.916666667) / step) + 1;
         if (i == 0)
         {
             x = data[0].x;

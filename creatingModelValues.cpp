@@ -8,50 +8,52 @@
 
 #include "Ephemeris.h"
 
-#define GMS  132712440043.85333
-#define GMJ  126712764.13345
-#define GME  398600.43552
-#define GMV  324858.59200
-#define GMST 37940585.20000
-#define GMU  5794556.46575
-#define GMN  6836527.10058
+#define GMS  132712440043.85333 // Sun
+#define GMJ  126712764.13345    // Jupiter
+#define GME  398600.43552       // Earth
+#define GMV  324858.59200       // Venus
+#define GMST 37940585.20000     // Saturn
+#define GMU  5794556.46575      // Uranus
+#define GMN  6836527.10058      // Neptune
+#define GMMS 42828.37521        // Mars
+#define GMMC 22031.78000        // Mercury
 
-#define LSD 25902068371200.0 // light speed in km/day
+#define LSD 25902068371.2000 // light speed in km/day
 #define LS 299792.458        // light speed in km/s
 #define KM_TO_AU 6.68459e-9  // 1 km = .. au
 
-void DP5(int n, std::vector<double> & x, double &t, double h, PlanetEphemeris *data, void f(int, std::vector<double> &, const double &, double *, PlanetEphemeris *))
+void DP5(int n, std::vector<double> & x, double &t, double h, PlanetEphemeris *data, int m, void f(int, std::vector<double> &, const double &, double *, PlanetEphemeris *, int))
 {
     std::vector<double> xmid (n);
     double tmid;
     double *k = new double[6 * n];
 
-    f(n, x, t, &k[0], data);
+    f(n, x, t, &k[0], data, m);
 
     for (int i = 0; i < n; i++)
         xmid[i] = x[i] + h * k[0 + i] / 5.0;
     tmid = t + h / 5.0;
-    f(n, xmid, tmid, &k[1 * n], data);
+    f(n, xmid, tmid, &k[1 * n], data, m);
 
     for (int i = 0; i < n; i++)
         xmid[i] = x[i] + h * (k[0 + i] * 3.0 / 40.0 + k[1 * n + i] * 9.0 / 40.0);
     tmid = t + h * 3.0 / 10.0;
-    f(n, xmid, tmid, &k[2 * n], data);
+    f(n, xmid, tmid, &k[2 * n], data, m);
 
     for (int i = 0; i < n; i++)
         xmid[i] = x[i] + h * (k[0 + i] * 44.0 / 45.0 - k[1 * n + i] * 56.0 / 15.0 + k[2 * n + i] * 32.0 / 9.0);
     tmid = t + h * 4.0 / 5.0;
-    f(n, xmid, tmid, &k[3 * n], data);
+    f(n, xmid, tmid, &k[3 * n], data, m);
 
     for (int i = 0; i < n; i++)
         xmid[i] = x[i] + h * (k[0 + i] * 19372.0 / 6561.0 - k[1 * n + i] * 25360.0 / 2187.0 + k[2 * n + i] * 64448.0 / 6561.0 - k[3 * n + i] * 212.0 / 729.0);
     tmid = t + h * 8.0 / 9.0;
-    f(n, xmid, tmid, &k[4 * n], data);
+    f(n, xmid, tmid, &k[4 * n], data, m);
 
     for (int i = 0; i < n; i++)
         xmid[i] = x[i] + h * (k[0 + i] * 9017.0 / 3168.0 - k[1 * n + i] * 355.0 / 33.0 + k[2 * n + i] * 46732.0 / 5247.0 + k[3 * n + i] * 49.0 / 176.0 - k[4 * n + i] * 5103.0 / 18656.0);
     tmid = t + h;
-    f(n, xmid, tmid, &k[5 * n], data);
+    f(n, xmid, tmid, &k[5 * n], data, m);
 
     for (int i = 0; i < n; i++)
         x[i] = x[i] + h * (k[0 + i] * 35.0 / 384.0 + k[2 * n + i] * 500.0 / 1113.0 + k[3 * n + i] * 125.0 / 192.0 - k[4 * n + i] * 2187.0 / 6784.0 + k[5 * n + i] * 11.0 / 84.0);
@@ -59,7 +61,7 @@ void DP5(int n, std::vector<double> & x, double &t, double h, PlanetEphemeris *d
     delete[] k;
 }
 
-void function(int n, std::vector<double> & X, const double &t, double *result, PlanetEphemeris *data)
+void function(int n, std::vector<double> & X, const double &t, double *result, PlanetEphemeris *data, int m)
 {
     result[0] = X[3];
     result[1] = X[4];
@@ -70,7 +72,7 @@ void function(int n, std::vector<double> & X, const double &t, double *result, P
 
     double x, y, z, R;
 
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < m; i++)
     {
         data[i].get_coors(t, x, y, z);
         R = sqrt((X[0] - x) * (X[0] - x) + (X[1] - y) * (X[1] - y) + (X[2] - z) * (X[2] - z));
@@ -89,18 +91,23 @@ void modeling (std::vector<double> X, double h)
     PlanetEphemeris uranus;
     PlanetEphemeris neptune;
     PlanetEphemeris saturn;
+    PlanetEphemeris mars;
+    PlanetEphemeris mercury;
     PlanetEphemeris eartht;
     PlanetEphemeris RealOrbit;
 
 
-    jupiter.init ("Data/Jupiter.txt");
-    eartht.init ("Data/Eartht.txt");
-    venus.init ("Data/Venus.txt");
-    uranus.init ("Data/Uranus.txt");
-    neptune.init ("Data/Neptune.txt");
-    saturn.init ("Data/Saturn.txt");
-    sun.init ("Data/Sun.txt");
-    RealOrbit.init ("Data/RealOrbit.txt");
+    jupiter.init ("Data/Jupiter.txt", 0.041666666667);
+    eartht.init ("Data/Eartht.txt", 0.041666666667);
+    venus.init ("Data/Venus.txt", 0.041666666667);
+    uranus.init ("Data/Uranus.txt", 0.041666666667);
+    neptune.init ("Data/Neptune.txt", 0.041666666667);
+    saturn.init ("Data/Saturn.txt", 0.041666666667);
+    sun.init ("Data/Sun.txt", 0.041666666667);
+    mars.init ("Data/Mars.txt", 0.041666666667);
+    mercury.init ("Data/Mercury.txt", 0.041666666667);
+
+    RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
 
     std::cout << "Initialization success\n";
 
@@ -111,13 +118,15 @@ void modeling (std::vector<double> X, double h)
     uranus.GM = GMU;
     neptune.GM = GMN;
     saturn.GM = GMST;
+    mars.GM = GMMS;
+    mercury.GM = GMMC;
 
-    PlanetEphemeris datas[7] = {sun, jupiter, eartht, venus, uranus, neptune, saturn};
+    PlanetEphemeris datas[9] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury};
 
     std::cout.setf(std::ios::scientific);
     
     // start time in Julian format
-    double t = 2458040.916666667;
+    double t = 2458040.937500000;
 
     std::ofstream output("Data/ModelOrbit.txt");
     output.setf(std::ios::scientific);
@@ -130,7 +139,7 @@ void modeling (std::vector<double> X, double h)
         // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
         output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
 
-        DP5(6, X, t, h, datas, function);
+        DP5(6, X, t, h, datas, 9, function);
 
         t += h;
     }
@@ -171,8 +180,8 @@ void creatingModelingValues ()
     EarthEphemeris earth;
 
     earth.init ("Data/Earth.txt");
-    object.init ("Data/ModelOrbit.txt");
-    sun.init ("Data/Sun.txt");
+    object.init ("Data/ModelOrbit.txt", 0.041666666667);
+    sun.init ("Data/Sun.txt", 0.041666666667);
 
     std::cout << "Iniatilization success\n";
 
@@ -248,7 +257,7 @@ void creatingModelingValues ()
 
 int main()
 {
-    std::vector<double> X = {1.468787090096414E+08,  7.299085877471100E+07,  2.053190793311784E+07,  3.860105756034324E+06,  3.247863089146682E+05,  1.492113690745696E+06};
+    std::vector<double> X = {1.469591208242925E+08,  7.299762167917201E+07,  2.056299266163284E+07,  3.859428549646102E+06,  3.244525935598258E+05,  1.492020244998816E+06};
 
     modeling (X, 0.041666666666666667);
     std::cout << "Modeling success\n";
