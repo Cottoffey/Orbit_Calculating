@@ -17,10 +17,39 @@
 #define GMN  6836527.10058      // Neptune
 #define GMMS 42828.37521        // Mars
 #define GMMC 22031.78000        // Mercury
+#define GMMN 4902.80008         // Moon
 
 #define LSD 25902068371.2000 // light speed in km/day
 #define LS 299792.458        // light speed in km/s
 #define KM_TO_AU 6.68459e-9  // 1 km = .. au
+
+void RK4 (int n, std::vector<double> & x, double & t, double h, PlanetEphemeris *data, int m, void f(int, std::vector<double> &, const double &, double *, PlanetEphemeris *, int))  {
+    std::vector<double> xmid (n);
+    double tmid;
+    double * k = new double [4 * n];
+    
+    f(n, x, t, &k[0], data, m);
+    
+    for (int i = 0; i < n; i++)
+        xmid[i] = x[i] + h * k[0+i] / 2.0;
+    tmid = t + h/2.0;
+    f(n, xmid, tmid, &k[1 * n], data, m);
+        
+    for (int i = 0; i < n; i++)
+        xmid[i] = x[i] + h * k[1*n + i] / 2.0;
+    tmid = t + h/2.0;
+    f(n, xmid, tmid, &k[2*n], data, m);
+
+    for (int i = 0; i < n; i++) 
+        xmid[i] = x[i] + h * k[2*n + i];
+    tmid = t + h;
+    f(n, xmid, tmid, &k[3*n], data, m);
+
+    for (int i = 0; i < n; i++) 
+        x[i] = x[i] + h*(k[0 + i]/6 + k[n + i]/3 + k[2*n + i]/3 + k[3*n +i]/6);
+    
+    delete[] k;
+}
 
 void DP5(int n, std::vector<double> & x, double &t, double h, PlanetEphemeris *data, int m, void f(int, std::vector<double> &, const double &, double *, PlanetEphemeris *, int))
 {
@@ -95,6 +124,7 @@ void modeling (std::vector<double> X, double h)
     PlanetEphemeris mercury;
     PlanetEphemeris eartht;
     PlanetEphemeris RealOrbit;
+    PlanetEphemeris moon;
 
 
     jupiter.init ("Data/Jupiter.txt", 0.041666666667);
@@ -106,6 +136,7 @@ void modeling (std::vector<double> X, double h)
     sun.init ("Data/Sun.txt", 0.041666666667);
     mars.init ("Data/Mars.txt", 0.041666666667);
     mercury.init ("Data/Mercury.txt", 0.041666666667);
+    moon.init ("Data/Moon.txt", 0.041666666667);
 
     RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
 
@@ -120,8 +151,9 @@ void modeling (std::vector<double> X, double h)
     saturn.GM = GMST;
     mars.GM = GMMS;
     mercury.GM = GMMC;
+    moon.GM = GMMN;
 
-    PlanetEphemeris datas[9] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury};
+    PlanetEphemeris datas[10] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury, moon};
 
     std::cout.setf(std::ios::scientific);
     
@@ -136,10 +168,11 @@ void modeling (std::vector<double> X, double h)
     while (t < 2458123.916666667)
     {
         RealOrbit.get_coors (t, x, y, z);
-        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
-        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
+        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
+        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
 
-        DP5(6, X, t, h, datas, 9, function);
+        DP5(6, X, t, h, datas, 10, function);
+        // RK4(6, X, t, h, datas, 10, function);
 
         t += h;
     }
@@ -161,7 +194,7 @@ double LTC (double time, double * obcoors, PlanetEphemeris & object)
 
     // Fixed-point method 
     int i = 0;
-    while (fabs (delta - prevdelta) / delta > 1e-13)
+    while (fabs (delta - prevdelta) / delta > 1e-15)
     {
         prevdelta = delta;
         object.get_coors (time - delta, X[0], X[1], X[2]);
@@ -169,6 +202,8 @@ double LTC (double time, double * obcoors, PlanetEphemeris & object)
         delta = R / LSD;
         i++;
     }
+
+    // std::cout << i << ' ' << delta << std::endl;
 
     return delta;
 }
