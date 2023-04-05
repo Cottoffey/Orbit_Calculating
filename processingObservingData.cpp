@@ -11,31 +11,33 @@
 #define SEC_DAY 86400.0 
 #define MINSEC_DAY 86400000.0
 
-struct Time
-{
-    int y;
-    int m;
-    int d;
-    double fd;
-    int h;
-    int mn;
-    double s;
-};
 
-int main ()
+
+void ProcessObservingData ()
 {
+    struct Time
+    {
+        int y;
+        int m;
+        int d;
+        double fd;
+        int h;
+        int mn;
+        double s;
+    };
+
     std::ifstream input ("Data/observations.txt");
     std::ofstream output ("Data/ObservData.txt");
     output.setf (std::ios::scientific);
     std::cout.setf (std::ios::scientific);
 
     // For Earth coors
-    EarthEphemeris Earth;
+    PlanetEphemeris Earth;
     TimeEphemeris TT_TDB;
     PlanetEphemeris Hubble;
     
     Hubble.init ("Data/Hubble.txt", 0.041666666667);
-    Earth.init ("Data/Earth.txt");
+    Earth.init ("Data/Earth.txt", 0.041666666667);
     Earth.GM = 398600.43552;
     TT_TDB.init ("Data/TDB.txt");
 
@@ -142,5 +144,13 @@ int main ()
     input.close();
     output.close();
 
-    return 0;
+    return;
+}
+
+
+int main ()
+{
+    ProcessObservingData ();
+
+    return -0;
 }

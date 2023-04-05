@@ -1,27 +1,4 @@
-#include <sofa.h>
-#include <iostream>
-#include <fstream>
-#include <cmath>
-#include <string>
-#include <vector>
-#include <iomanip>
-
-#include "Ephemeris.h"
-
-#define GMS  132712440043.85333 // Sun
-#define GMJ  126712764.13345    // Jupiter
-#define GME  398600.43552       // Earth
-#define GMV  324858.59200       // Venus
-#define GMST 37940585.20000     // Saturn
-#define GMU  5794556.46575      // Uranus
-#define GMN  6836527.10058      // Neptune
-#define GMMS 42828.37521        // Mars
-#define GMMC 22031.78000        // Mercury
-#define GMMN 4902.80008         // Moon
-
-#define LSD 25902068371.2000 // light speed in km/day
-#define LS 299792.458        // light speed in km/s
-#define KM_TO_AU 6.68459e-9  // 1 km = .. au
+#include "creatingModelValues.h"
 
 void RK4 (int n, std::vector<double> & x, double & t, double h, PlanetEphemeris *data, int m, void f(int, std::vector<double> &, const double &, double *, PlanetEphemeris *, int))  {
     std::vector<double> xmid (n);
@@ -112,7 +89,7 @@ void function(int n, std::vector<double> & X, const double &t, double *result, P
     }
 }
 
-void modeling (std::vector<double> X, double h)
+void modeling (std::vector<double> X, int n, double h)
 {
     PlanetEphemeris sun;
     PlanetEphemeris jupiter;
@@ -168,10 +145,10 @@ void modeling (std::vector<double> X, double h)
     while (t < 2458123.916666667)
     {
         RealOrbit.get_coors (t, x, y, z);
-        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
-        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
+        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
+        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
 
-        DP5(6, X, t, h, datas, 10, function);
+        DP5(n, X, t, h, datas, 10, function);
         // RK4(6, X, t, h, datas, 10, function);
 
         t += h;
@@ -212,9 +189,9 @@ void creatingModelingValues ()
 {
     PlanetEphemeris object;
     PlanetEphemeris sun;
-    EarthEphemeris earth;
+    PlanetEphemeris earth;
 
-    earth.init ("Data/Earth.txt");
+    earth.init ("Data/Earth.txt", 0.041666666667);
     object.init ("Data/ModelOrbit.txt", 0.041666666667);
     sun.init ("Data/Sun.txt", 0.041666666667);
 
@@ -283,22 +260,10 @@ void creatingModelingValues ()
         if (ra < 0.0)
             ra = 2 * M_PI + ra;
 
-        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << ' ' << ((fabs(tmp1 - ra) > M_PI) ? (fabs (tmp1 - ra) - M_PI) : fabs (tmp1 - ra)) << ' ' << ((fabs(tmp- dec) > M_PI) ? (fabs (tmp- dec) - M_PI) : fabs (tmp- dec)) <<  std::endl;
+        // output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << ' ' << ((fabs(tmp1 - ra) > M_PI) ? (fabs (tmp1 - ra) - M_PI) : fabs (tmp1 - ra)) << ' ' << ((fabs(tmp- dec) > M_PI) ? (fabs (tmp- dec) - M_PI) : fabs (tmp- dec)) <<  std::endl;
+        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << std::endl;
     }
 
     input.close();
     output.close();
-}
-
-int main()
-{
-    std::vector<double> X = {1.469591208242925E+08,  7.299762167917201E+07,  2.056299266163284E+07,  3.859428549646102E+06,  3.244525935598258E+05,  1.492020244998816E+06};
-
-    modeling (X, 0.041666666666666667);
-    std::cout << "Modeling success\n";
-
-    creatingModelingValues ();
-    std::cout << "Creating model values success\n";
-
-    return 0;
 }
