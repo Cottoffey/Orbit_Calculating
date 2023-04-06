@@ -105,7 +105,7 @@ void modeling (std::vector<double> X, int n, double h)
 
 
     jupiter.init ("Data/Jupiter.txt", 0.041666666667);
-    eartht.init ("Data/Eartht.txt", 0.041666666667);
+    eartht.init ("Data/Earth.txt", 0.041666666667);
     venus.init ("Data/Venus.txt", 0.041666666667);
     uranus.init ("Data/Uranus.txt", 0.041666666667);
     neptune.init ("Data/Neptune.txt", 0.041666666667);
@@ -118,17 +118,6 @@ void modeling (std::vector<double> X, int n, double h)
     RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
 
     std::cout << "Initialization success\n";
-
-    sun.GM = GMS;
-    jupiter.GM = GMJ;
-    eartht.GM = GME;
-    venus.GM = GMV;
-    uranus.GM = GMU;
-    neptune.GM = GMN;
-    saturn.GM = GMST;
-    mars.GM = GMMS;
-    mercury.GM = GMMC;
-    moon.GM = GMMN;
 
     PlanetEphemeris datas[10] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury, moon};
 

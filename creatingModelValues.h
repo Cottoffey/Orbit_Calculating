@@ -9,17 +9,6 @@
 
 #include "Ephemeris.h"
 
-#define GMS  132712440043.85333 // Sun
-#define GMJ  126712764.13345    // Jupiter
-#define GME  398600.43552       // Earth
-#define GMV  324858.59200       // Venus
-#define GMST 37940585.20000     // Saturn
-#define GMU  5794556.46575      // Uranus
-#define GMN  6836527.10058      // Neptune
-#define GMMS 42828.37521        // Mars
-#define GMMC 22031.78000        // Mercury
-#define GMMN 4902.80008         // Moon
-
 #define LSD 25902068371.2000 // light speed in km/day
 #define LS 299792.458        // light speed in km/s
 #define KM_TO_AU 6.68459e-9  // 1 km = .. au

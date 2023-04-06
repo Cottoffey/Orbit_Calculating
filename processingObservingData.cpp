@@ -38,7 +38,6 @@ void ProcessObservingData ()
     
     Hubble.init ("Data/Hubble.txt", 0.041666666667);
     Earth.init ("Data/Earth.txt", 0.041666666667);
-    Earth.GM = 398600.43552;
     TT_TDB.init ("Data/TDB.txt");
 
     for (int i = 0; i < 222; i++)

@@ -28,11 +28,12 @@ public:
 
         struct format tmp;
 
+        input >> GM;
+
         while (!input.eof())
         {
             input >> tmp.t >> tmp.x >> tmp.y >> tmp.z;
-            if (filename == "Data/Earth.txt")
-                input >> tmp.vx >> tmp.vy >> tmp.vz;
+            input >> tmp.vx >> tmp.vy >> tmp.vz;
             data.push_back(tmp);
         }
 
