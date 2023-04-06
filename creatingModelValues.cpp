@@ -170,8 +170,8 @@ void modeling (std::vector<double> X, int n, double h)
     while (t < 2458123.916666667)
     {
         RealOrbit.get_coors (t, x, y, z);
-        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
-        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
+        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' <<  X[2] - z <<  std::endl;
+        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
 
         DP5(n, X, t, h, datas, 10, function);
         // RK4(6, X, t, h, datas, 10, function);

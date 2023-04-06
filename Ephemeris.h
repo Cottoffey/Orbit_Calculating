@@ -33,7 +33,8 @@ public:
         while (!input.eof())
         {
             input >> tmp.t >> tmp.x >> tmp.y >> tmp.z;
-            input >> tmp.vx >> tmp.vy >> tmp.vz;
+            if (filename != "Data/RealOrbit.txt")
+                input >> tmp.vx >> tmp.vy >> tmp.vz;
             data.push_back(tmp);
         }
 
