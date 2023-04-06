@@ -83,54 +83,19 @@ void function(int n, std::vector<double> & X, const double &t, double *result, P
         data[i].get_coors(t, x, y, z);
         R = sqrt((X[0] - x) * (X[0] - x) + (X[1] - y) * (X[1] - y) + (X[2] - z) * (X[2] - z));
 
-        result[3] = result[3] + 86400.L * 86400.L * (data[i].GM * (x - X[0]) / (R * R * R));
-        result[4] = result[4] + 86400.L * 86400.L * (data[i].GM * (y - X[1]) / (R * R * R));
-        result[5] = result[5] + 86400.L * 86400.L * (data[i].GM * (z - X[2]) / (R * R * R));
+        result[3] = result[3] + 86400. * 86400. * data[i].GM * (x - X[0]) / (R * R * R);
+        result[4] = result[4] + 86400. * 86400. * data[i].GM * (y - X[1]) / (R * R * R);
+        result[5] = result[5] + 86400. * 86400. * data[i].GM * (z - X[2]) / (R * R * R);
     }
 }
 
-void modeling (std::vector<double> X, int n, double h)
+void modeling (std::vector<double> X, int n, double h, PlanetEphemeris * data, int m)
 {
-    PlanetEphemeris sun;
-    PlanetEphemeris jupiter;
-    PlanetEphemeris venus;
-    PlanetEphemeris uranus;
-    PlanetEphemeris neptune;
-    PlanetEphemeris saturn;
-    PlanetEphemeris mars;
-    PlanetEphemeris mercury;
-    PlanetEphemeris eartht;
     PlanetEphemeris RealOrbit;
-    PlanetEphemeris moon;
-
-
-    jupiter.init ("Data/Jupiter.txt", 0.041666666667);
-    eartht.init ("Data/Eartht.txt", 0.041666666667);
-    venus.init ("Data/Venus.txt", 0.041666666667);
-    uranus.init ("Data/Uranus.txt", 0.041666666667);
-    neptune.init ("Data/Neptune.txt", 0.041666666667);
-    saturn.init ("Data/Saturn.txt", 0.041666666667);
-    sun.init ("Data/Sun.txt", 0.041666666667);
-    mars.init ("Data/Mars.txt", 0.041666666667);
-    mercury.init ("Data/Mercury.txt", 0.041666666667);
-    moon.init ("Data/Moon.txt", 0.041666666667);
 
     RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
 
     std::cout << "Initialization success\n";
-
-    sun.GM = GMS;
-    jupiter.GM = GMJ;
-    eartht.GM = GME;
-    venus.GM = GMV;
-    uranus.GM = GMU;
-    neptune.GM = GMN;
-    saturn.GM = GMST;
-    mars.GM = GMMS;
-    mercury.GM = GMMC;
-    moon.GM = GMMN;
-
-    PlanetEphemeris datas[10] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury, moon};
 
     std::cout.setf(std::ios::scientific);
     
@@ -145,10 +110,10 @@ void modeling (std::vector<double> X, int n, double h)
     while (t < 2458123.916666667)
     {
         RealOrbit.get_coors (t, x, y, z);
-        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
-        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
+        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' << X[2] - z <<  std::endl;
+        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
 
-        DP5(n, X, t, h, datas, 10, function);
+        DP5(n, X, t, h, data, m, function);
         // RK4(6, X, t, h, datas, 10, function);
 
         t += h;
@@ -192,7 +157,7 @@ void creatingModelingValues ()
     PlanetEphemeris earth;
 
     earth.init ("Data/Earth.txt", 0.041666666667);
-    object.init ("Data/ModelOrbit.txt", 0.041666666667);
+    object.init ("Data/RealOrbit.txt", 0.041666666667);
     sun.init ("Data/Sun.txt", 0.041666666667);
 
     std::cout << "Iniatilization success\n";

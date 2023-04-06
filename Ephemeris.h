@@ -31,7 +31,7 @@ public:
         while (!input.eof())
         {
             input >> tmp.t >> tmp.x >> tmp.y >> tmp.z;
-            if (filename == "Data/Earth.txt")
+            if (filename == "Data/Earth.txt" || filename == "Data/RealOrbit.txt")
                 input >> tmp.vx >> tmp.vy >> tmp.vz;
             data.push_back(tmp);
         }
