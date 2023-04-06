@@ -11,8 +11,6 @@
 #define SEC_DAY 86400.0 
 #define MINSEC_DAY 86400000.0
 
-
-
 void ProcessObservingData ()
 {
     struct Time

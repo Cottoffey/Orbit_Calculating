@@ -136,8 +136,8 @@ void modeling (std::vector<double> X, int n, double h)
     PlanetEphemeris mars;
     PlanetEphemeris mercury;
     PlanetEphemeris eartht;
-    PlanetEphemeris RealOrbit;
     PlanetEphemeris moon;
+    // PlanetEphemeris RealOrbit;
 
 
     jupiter.init ("Data/Jupiter.txt", 0.041666666667);
@@ -151,7 +151,7 @@ void modeling (std::vector<double> X, int n, double h)
     mercury.init ("Data/Mercury.txt", 0.041666666667);
     moon.init ("Data/Moon.txt", 0.041666666667);
 
-    RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
+    // RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
 
     std::cout << "Initialization success\n";
 
@@ -166,12 +166,13 @@ void modeling (std::vector<double> X, int n, double h)
     output.setf(std::ios::scientific);
 
     double x, y, z;    
+    output << 0 << std::endl;
 
     while (t < 2458123.916666667)
     {
-        RealOrbit.get_coors (t, x, y, z);
-        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' <<  X[2] - z <<  std::endl;
-        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << std::endl;
+        // RealOrbit.get_coors (t, x, y, z);
+        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' <<  X[2] - z <<  std::endl;
+        output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[3] << ' ' << X[4] << ' ' << X[5] <<  std::endl;
 
         DP5(n, X, t, h, datas, 10, function);
         // RK4(6, X, t, h, datas, 10, function);
@@ -285,8 +286,8 @@ void creatingModelingValues ()
         if (ra < 0.0)
             ra = 2 * M_PI + ra;
 
-        // output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << ' ' << ((fabs(tmp1 - ra) > M_PI) ? (fabs (tmp1 - ra) - M_PI) : fabs (tmp1 - ra)) << ' ' << ((fabs(tmp- dec) > M_PI) ? (fabs (tmp- dec) - M_PI) : fabs (tmp- dec)) <<  std::endl;
-        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << std::endl;
+        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << ' ' << ((fabs(tmp1 - ra) > M_PI) ? (fabs (tmp1 - ra) - M_PI) : fabs (tmp1 - ra)) << ' ' << ((fabs(tmp- dec) > M_PI) ? (fabs (tmp- dec) - M_PI) : fabs (tmp- dec)) <<  std::endl;
+        // output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << std::endl;
     }
 
     input.close();
