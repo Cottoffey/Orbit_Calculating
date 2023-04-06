@@ -76,16 +76,52 @@ void function(int n, std::vector<double> & X, const double &t, double *result, P
     result[4] = 0.0;
     result[5] = 0.0;
 
-    double x, y, z, R;
+    double coors[3], R, RC, cc[3];
+
+    double tmp1, tmp2, v[3], a[3], u[3];
 
     for (int i = 0; i < m; i++)
     {
-        data[i].get_coors(t, x, y, z);
-        R = sqrt((X[0] - x) * (X[0] - x) + (X[1] - y) * (X[1] - y) + (X[2] - z) * (X[2] - z));
+        data[i].get_coors(t, coors[0], coors[1], coors[2]);
+        R = sqrt((X[0] - coors[0]) * (X[0] - coors[0]) + (X[1] - coors[1]) * (X[1] - coors[1]) + (X[2] - coors[2]) * (X[2] - coors[2]));
 
-        result[3] = result[3] + 86400.L * 86400.L * (data[i].GM * (x - X[0]) / (R * R * R));
-        result[4] = result[4] + 86400.L * 86400.L * (data[i].GM * (y - X[1]) / (R * R * R));
-        result[5] = result[5] + 86400.L * 86400.L * (data[i].GM * (z - X[2]) / (R * R * R));
+        data[i].get_speed (t, v[0], v[1], v[2]);
+        data[i].get_acceleration (t, a[0], a[1], a[2]);
+
+        // unit vector AB
+        for (int j = 0; j < 3; j ++)
+            u[j] = (X[j] - coors[j]) / R;
+        
+        // first summation  
+        tmp1 = X[3] * X[3] + X[4] * X[4] + X[5] * X[5] + 
+            +  2 *  (v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+            -  4 *  (X[3] * v[0] + X[4] * v[1] + X[5] * v[2])
+            - 1.5 * (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) * (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) 
+            - 0.5 * (u[0] * a[0] + u[1] * a[1] + u[2] * a[2]) * R;
+
+        for (int j = 0; j < m; j++)
+        {
+            data[j].get_coors (t, cc[0], cc[1], cc[2]);
+            RC = sqrt((X[0] - cc[0]) * (X[0] - cc[0]) + (X[1] - cc[1]) * (X[1] - cc[1]) + (X[2] - cc[2]) * (X[2] - cc[2]));
+            tmp1 = tmp1 - 4 * data[j].GM * 86400.L * 86400.L / RC;
+
+            if (j != i)
+            {
+                RC = sqrt((coors[0] - cc[0]) * (coors[0] - cc[0]) + (coors[1] - cc[1]) * (coors[1] - cc[1]) + (coors[2] - cc[2]) * (coors[2] - cc[2]));
+                tmp1 = tmp1 - data[j].GM * 86400.L * 86400.L / RC;
+            }   
+        }
+
+        // second summation
+        tmp2 = u[0] * (4 * X[3] - 3 * v[0]) + u[1] * (4 * X[4] - 3 * v[1]) + u[2] * (4 * X[5] - 3 * v[2]);
+
+
+        for (int j = 3; j < 6; j++)   
+        result[j] = result[j] - 86400.L * 86400.L * data[i].GM * u[j - 3] / (R * R)
+                  - 86400.L * 86400.L * data[i].GM * u[j - 3] * tmp1 / (R * R * LSD * LSD)
+                  + 86400.L * 86400.L * data[i].GM * tmp2 * (X[j] - v[j - 3]) / (R * R * LSD * LSD)
+                  + 7 * 86400.L * 86400.L * data[i].GM * a[j-3] / (R * 2 * LSD * LSD);
+
     }
 }
 

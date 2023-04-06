@@ -65,9 +65,9 @@ public:
         int i = (int)((time - 2458040.916666667) / step) + 1;
         if (i == 0)
         {
-            vx = data[0].x;
-            vy = data[0].y;
-            vz = data[0].z;
+            vx = data[0].vx;
+            vy = data[0].vy;
+            vz = data[0].vz;
             return;
         }
 
@@ -75,6 +75,16 @@ public:
         vy = (time - data[i - 1].t) * (data[i].vy - data[i - 1].vy) / (data[i].t - data[i - 1].t) + data[i - 1].vy;
         vz = (time - data[i - 1].t) * (data[i].vz - data[i - 1].vz) / (data[i].t - data[i - 1].t) + data[i - 1].vz;
     }
+
+    void get_acceleration (double time, double & ax, double & ay, double & az)
+    {
+        int i = (int)((time - 2458040.916666667) / step) + 1;
+        
+        ax = (data[i].vx - data[i - 1].vx) / step;
+        ay = (data[i].vy - data[i - 1].vy) / step;
+        az = (data[i].vz - data[i - 1].vz) / step;
+    }
+
 };
 
 class TimeEphemeris 
