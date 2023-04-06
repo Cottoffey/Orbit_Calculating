@@ -125,38 +125,8 @@ void function(int n, std::vector<double> & X, const double &t, double *result, P
     }
 }
 
-void modeling (std::vector<double> X, int n, double h)
+void modeling (std::vector<double> X, int n, double h, PlanetEphemeris * data, int m)
 {
-    PlanetEphemeris sun;
-    PlanetEphemeris jupiter;
-    PlanetEphemeris venus;
-    PlanetEphemeris uranus;
-    PlanetEphemeris neptune;
-    PlanetEphemeris saturn;
-    PlanetEphemeris mars;
-    PlanetEphemeris mercury;
-    PlanetEphemeris eartht;
-    PlanetEphemeris moon;
-    // PlanetEphemeris RealOrbit;
-
-
-    jupiter.init ("Data/Jupiter.txt", 0.041666666667);
-    eartht.init ("Data/Earth.txt", 0.041666666667);
-    venus.init ("Data/Venus.txt", 0.041666666667);
-    uranus.init ("Data/Uranus.txt", 0.041666666667);
-    neptune.init ("Data/Neptune.txt", 0.041666666667);
-    saturn.init ("Data/Saturn.txt", 0.041666666667);
-    sun.init ("Data/Sun.txt", 0.041666666667);
-    mars.init ("Data/Mars.txt", 0.041666666667);
-    mercury.init ("Data/Mercury.txt", 0.041666666667);
-    moon.init ("Data/Moon.txt", 0.041666666667);
-
-    // RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
-
-    std::cout << "Initialization success\n";
-
-    PlanetEphemeris datas[10] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury, moon};
-
     std::cout.setf(std::ios::scientific);
     
     // start time in Julian format
@@ -174,7 +144,7 @@ void modeling (std::vector<double> X, int n, double h)
         // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' <<  X[2] - z <<  std::endl;
         output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[3] << ' ' << X[4] << ' ' << X[5] <<  std::endl;
 
-        DP5(n, X, t, h, datas, 10, function);
+        DP5(n, X, t, h, data, m, function);
         // RK4(6, X, t, h, datas, 10, function);
 
         t += h;
