@@ -80,10 +80,43 @@ void function(int n, std::vector<double> & X, const double &t, double *result, P
 
     double tmp1, tmp2, v[3], a[3], u[3];
 
+    // dF/dX
+    int F[36] = {0, 0, 0, 1, 0, 0,
+                 0, 0, 0, 0, 1, 0,
+                 0, 0, 0, 0, 0, 1,
+                 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0};
+
     for (int i = 0; i < m; i++)
     {
         data[i].get_coors(t, coors[0], coors[1], coors[2]);
         R = sqrt((X[0] - coors[0]) * (X[0] - coors[0]) + (X[1] - coors[1]) * (X[1] - coors[1]) + (X[2] - coors[2]) * (X[2] - coors[2]));
+
+        //dF/dX
+        for (int m = 3; m < 6; m++)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                if (m - 3 == k)
+                    F[m * 6 + k] = 86400.L * 86400.L * data[i].GM / (R * R * R) * (6 * (coors[k] - X[k]) * (coors[k] - X[k]) - R) / (R * R * R * R);
+                else
+                    F[m * 6 + k] = 86400.L * 86400.L * data[i].GM * 6 * (coors[m - 3] - X[m - 3]) * (coors[k] - X[k]) / (R * R * R * R);
+            }
+        }
+
+        for (int m = 0; m < 6; m++)
+        {
+            for (int h = 0; h < 6; h++)
+            {
+                result[6 + m*6 + h] = 0;
+                for (int s = 0; s < 6; s++)
+                {
+                    result[6 + m*6 + h] += (F[m * 6 + s] * X[6 + s*6 + h]);
+                }
+            }
+        }
+
 
         data[i].get_speed (t, v[0], v[1], v[2]);
         data[i].get_acceleration (t, a[0], a[1], a[2]);
