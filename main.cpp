@@ -43,8 +43,8 @@ int main()
     modeling (X, 42, 0.041666666666666667, datas, 10);
     std::cout << "Modeling success\n";
 
-    // creatingModelingValues ();
-    // std::cout << "Creating model values success\n";
+    creatingModelingValues ();
+    std::cout << "Creating model values success\n";
 
     return 0;
 }
