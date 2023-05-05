@@ -1,7 +1,7 @@
 #include "creatingModelValues.h"
+#include "Regression/GaussNewton.h"
 
-int main()
-{
+int main() {
     PlanetEphemeris sun;
     PlanetEphemeris jupiter;
     PlanetEphemeris venus;
@@ -15,16 +15,16 @@ int main()
     // PlanetEphemeris RealOrbit;
 
 
-    jupiter.init ("Data/Jupiter.txt", 0.041666666667);
-    eartht.init ("Data/Earth.txt", 0.041666666667);
-    venus.init ("Data/Venus.txt", 0.041666666667);
-    uranus.init ("Data/Uranus.txt", 0.041666666667);
-    neptune.init ("Data/Neptune.txt", 0.041666666667);
-    saturn.init ("Data/Saturn.txt", 0.041666666667);
-    sun.init ("Data/Sun.txt", 0.041666666667);
-    mars.init ("Data/Mars.txt", 0.041666666667);
-    mercury.init ("Data/Mercury.txt", 0.041666666667);
-    moon.init ("Data/Moon.txt", 0.041666666667);
+    jupiter.init("Data/Jupiter.txt", 0.041666666667);
+    eartht.init("Data/Earth.txt", 0.041666666667);
+    venus.init("Data/Venus.txt", 0.041666666667);
+    uranus.init("Data/Uranus.txt", 0.041666666667);
+    neptune.init("Data/Neptune.txt", 0.041666666667);
+    saturn.init("Data/Saturn.txt", 0.041666666667);
+    sun.init("Data/Sun.txt", 0.041666666667);
+    mars.init("Data/Mars.txt", 0.041666666667);
+    mercury.init("Data/Mercury.txt", 0.041666666667);
+    moon.init("Data/Moon.txt", 0.041666666667);
 
     // RealOrbit.init ("Data/RealOrbit.txt", 0.041666666667);
 
@@ -32,19 +32,32 @@ int main()
 
     PlanetEphemeris datas[10] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury, moon};
     // start parameters x,y,z,vx,vy,vz
-    std::vector<double> X = {1.469591208242925E+08,  7.299762167917201E+07,  2.056299266163284E+07,  3.859428549646102E+06,  3.244525935598258E+05,  1.492020244998816E+06,
-                             1,0,0,0,0,0,
-                             0,1,0,0,0,0,
-                             0,0,1,0,0,0,
-                             0,0,0,1,0,0,
-                             0,0,0,0,1,0,
-                             0,0,0,0,0,1};
+    std::vector<double> X = {1.469591208242925E+08, 7.299762167917201E+07, 2.056299266163284E+07, 3.859428549646102E+06,
+                             3.244525935598258E+05, 1.492020244998816E+06,
+                             1, 0, 0, 0, 0, 0,
+                             0, 1, 0, 0, 0, 0,
+                             0, 0, 1, 0, 0, 0,
+                             0, 0, 0, 1, 0, 0,
+                             0, 0, 0, 0, 1, 0,
+                             0, 0, 0, 0, 0, 1};
 
-    modeling (X, 42, 0.041666666666666667, datas, 10);
+    modeling(X, 42, 0.041666666666666667, datas, 10);
     std::cout << "Modeling success\n";
 
-    creatingModelingValues ();
+    creatingModelingValues();
     std::cout << "Creating model values success\n";
 
+    std::ifstream input_data("Data/ObservData.txt");
+    vec observ_data(444);
+    for (int i = 0; i < 222; ++i) {
+        double t, ra, dec;
+        char buffer[140];
+        input_data >> t >> ra >> dec;
+        input_data.getline(buffer, 140);
+        observ_data[i * 2] = ra;
+        observ_data[i * 2 + 1] = dec;
+    }
+    GaussNewton gn_solver(observ_data, 6, datas);
+    gn_solver.fit(X, 0.041666666666666667);
     return 0;
 }
