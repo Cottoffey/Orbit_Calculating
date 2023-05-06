@@ -49,15 +49,16 @@ int main() {
 
     std::ifstream input_data("Data/ObservData.txt");
     vec observ_data(444);
+    vec times(222);
     for (int i = 0; i < 222; ++i) {
-        double t, ra, dec;
+        double ra, dec;
         char buffer[140];
-        input_data >> t >> ra >> dec;
+        input_data >> times[i] >> ra >> dec;
         input_data.getline(buffer, 140);
         observ_data[i * 2] = ra;
         observ_data[i * 2 + 1] = dec;
     }
-    GaussNewton gn_solver(observ_data, 6, datas);
+    GaussNewton gn_solver(observ_data, times, 6, datas);
     gn_solver.fit(X, 0.041666666666666667);
     return 0;
 }

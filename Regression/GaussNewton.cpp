@@ -1,10 +1,15 @@
 #include "GaussNewton.h"
 
-GaussNewton::GaussNewton(const vec &y, int p_num, PlanetEphemeris *datas) : y(y), p_num(p_num), params(p_num),
-                                                                            residual(y.size()),
-                                                                            result_column(p_num),
-                                                                            grad(p_num),
-                                                                            planets_data(datas) {
+#include <utility>
+
+GaussNewton::GaussNewton(const vec &y, vec &times, int p_num, PlanetEphemeris *datas) : y(y),
+                                                                                        times(std::move(times)),
+                                                                                        p_num(p_num),
+                                                                                        params(p_num),
+                                                                                        residual(y.size()),
+                                                                                        result_column(p_num),
+                                                                                        grad(p_num),
+                                                                                        planets_data(datas) {
     for (auto &row: grad)
         row.resize(p_num);
 }
@@ -19,7 +24,7 @@ void GaussNewton::residual_calculation(double x_coord, double y_coord, double z_
 }
 
 
-void GaussNewton::integration(int n, int dim, double h, vec &X) {
+void GaussNewton::integration(int n, int dim, vec &X, double h) {
     double t = 2458040.937500000;
     matrix r_deriv;    // dr / db
     matrix g_deriv(2); // dg / dx
@@ -37,12 +42,13 @@ void GaussNewton::integration(int n, int dim, double h, vec &X) {
             result_column[j] += r_deriv[0][j] * residual[i * 2] + r_deriv[1][j] * residual[i * 2 + 1];
             // JacobianT * Jacobian
             for (int k = 0; k < p_num; ++k) {
-                grad[j][k] += r_deriv[0][j] * r_deriv[0][k] + r_deriv[1][j] + r_deriv[1][k];
+                grad[j][k] += r_deriv[0][j] * r_deriv[0][k] + r_deriv[1][j] * r_deriv[1][k];
             }
         }
-
-        DP5(dim, X, t, h, planets_data, 10, function);
-        t += h;
+        while (t < times[i + 1]) {
+            DP5(dim, X, t, h, planets_data, 10, function);
+            t += h;
+        }
     }
 
 
@@ -53,21 +59,24 @@ vec GaussNewton::fit(const vec &init_state, const double h) {
     for (int i = 0; i < p_num; ++i)
         params[i] = init_state[i];
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 5; ++i) {
         // update X
         vec X = init_state;
         clear_matrices();
         for (int j = 0; j < p_num; ++j)
             X[j] = params[j];
 
-        integration(y.size() / 2, X.size(), h, X);
+        integration(y.size() / 2, X.size(), X, h);
+
         vec sol = Cholesky::CholeskySLE(grad, result_column);
+        std::cout << "Matrix At * A: #" << i << "\n";
         printMatrix(grad);
+        std::cout << "\nSLE solution #" << i << ':' << std::endl;
         for (int j = 0; j < p_num; ++j) {
             params[j] = sol[j] + params[j];
             std::cout << params[j] << ' ';
         }
-        std::cout << '\n';
+        std::cout << "\n\n";
     }
     return params;
 }
@@ -96,7 +105,7 @@ void drdb(const vec &X, matrix &g_deriv, matrix &residual_deriv) {
     for (auto &row: dxdp)
         row.resize(6);
     for (int j = 0; j < 18; ++j)
-        dxdp[j / 6][j % 6] = -X[j + 6];
+        dxdp[j / 6][j % 6] = X[j + 6];
 
     // dr / db
     residual_deriv = multMatrix(g_deriv, dxdp);
