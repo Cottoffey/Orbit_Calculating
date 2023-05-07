@@ -4,28 +4,25 @@
 #include "../creatingModelValues.h"
 
 
-void dgdx(double x, double y, double z, matrix &derivative);
-
-void drdb(const vec &X, matrix &g_deriv, matrix &residual_deriv);
-
 class GaussNewton {
     int p_num; // number of parameters
     vec y; // observations
-    vec times; // times
+    vec times;
     vec params; // parameters
     vec residual;
-    vec result_column; // jacobianT * residual
-    matrix grad; // jacobianT * jacobian
-    PlanetEphemeris *planets_data;
+    Matrix jacobian; // jacobianT * jacobian
+    PlanetEphemeris *datas;
 public:
 
-    GaussNewton(const vec &y, vec &times, int p_num, PlanetEphemeris *datas);
+    GaussNewton(int p_num, PlanetEphemeris *datas);
 
-    vec fit(const vec &init_state, double h);
+    vec fit(const vec &init_state);
 
-    void residual_calculation(double x, double y, double z, int index);
+    static void dgdx(double x, double y, double z, Matrix &derivative);
 
-    void integration(int n, int dim, vec &X, double h);
+    void init();
+
+    void matrices_calculation();
 
     void clear_matrices();
 };

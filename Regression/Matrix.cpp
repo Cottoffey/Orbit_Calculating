@@ -1,6 +1,6 @@
 #include "Matrix.h"
 
-void printMatrix(const matrix &A) {
+void printMatrix(const Matrix &A) {
     for (const auto &y: A) {
         for (double x: y)
             std::cout << x << ' ';
@@ -8,11 +8,10 @@ void printMatrix(const matrix &A) {
     }
 }
 
-matrix transpose(matrix &A) {
-    matrix C;
+Matrix transpose(Matrix &A) {
     int n = A.size();
     int m = A[0].size();
-    C.resize(m);
+    Matrix C(m);
     for (int i = 0; i < m; ++i)
         C[i].resize(n);
 
@@ -25,11 +24,10 @@ matrix transpose(matrix &A) {
 }
 
 
-vec multMatrix(const matrix &A, const vec &B) {
-    vec C;
+vec multMatrix(const Matrix &A, const vec &B) {
     int n = A.size();
     int m = B.size();
-    C.resize(n);
+    vec C(n);
 
     for (size_t y = 0; y < n; ++y) {
         for (size_t x = 0; x < m; ++x)
@@ -38,12 +36,11 @@ vec multMatrix(const matrix &A, const vec &B) {
     return C;
 }
 
-matrix multMatrix(const matrix &A, const matrix &B) {
-    matrix C;
+Matrix multMatrix(const Matrix &A, const Matrix &B) {
     int n = A.size();
     int m1 = B.size();
     int m2 = B[0].size();
-    C.resize(n);
+    Matrix C(n);
 
     for (int y = 0; y < n; ++y) {
         C[y].resize(m2);

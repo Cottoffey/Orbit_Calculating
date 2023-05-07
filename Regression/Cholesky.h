@@ -3,9 +3,9 @@
 #include "Matrix.h"
 
 namespace Cholesky {
-    matrix CholeskyDecomp(const matrix &A);
+    Matrix CholeskyDecomp(const Matrix &A);
 
-    vec solveTriangleSLE(const matrix &A, const vec &B, MATRIX_TYPE type);
+    vec solveTriangleSLE(const Matrix &A, const vec &B, MATRIX_TYPE type);
 
-    vec CholeskySLE(const matrix &A, const vec &B);
+    vec CholeskySLE(const Matrix &A, const vec &B);
 }

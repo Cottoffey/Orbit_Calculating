@@ -21,7 +21,7 @@ void function(int n, std::vector<double> & X, const double &t, double *result, P
 
 void modeling (std::vector<double> X, int n, double h, PlanetEphemeris * data, int m);
 
-double LTC (double time, double * obcoors, PlanetEphemeris & object);
+double LTC (double time, double * obcoors, DataEphemeris & object);
 
 void creatingModelingValues ();
 

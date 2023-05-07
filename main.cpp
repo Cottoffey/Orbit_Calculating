@@ -41,24 +41,9 @@ int main() {
                              0, 0, 0, 0, 1, 0,
                              0, 0, 0, 0, 0, 1};
 
-    modeling(X, 42, 0.041666666666666667, datas, 10);
-    std::cout << "Modeling success\n";
 
-    creatingModelingValues();
-    std::cout << "Creating model values success\n";
-
-    std::ifstream input_data("Data/ObservData.txt");
-    vec observ_data(444);
-    vec times(222);
-    for (int i = 0; i < 222; ++i) {
-        double ra, dec;
-        char buffer[140];
-        input_data >> times[i] >> ra >> dec;
-        input_data.getline(buffer, 140);
-        observ_data[i * 2] = ra;
-        observ_data[i * 2 + 1] = dec;
-    }
-    GaussNewton gn_solver(observ_data, times, 6, datas);
-    gn_solver.fit(X, 0.041666666666666667);
+    GaussNewton gn_solver(6, datas);
+    gn_solver.init();
+    gn_solver.fit(X);
     return 0;
 }

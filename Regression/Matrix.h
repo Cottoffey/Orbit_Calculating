@@ -5,18 +5,18 @@
 
 
 using vec = std::vector<double>;
-using matrix = std::vector<vec>;
+using Matrix = std::vector<vec>;
 enum class MATRIX_TYPE {
     LOWER_TRIANGLE = 0,
     UPPER_TRIANGLE,
 };
 
 
-void printMatrix(const matrix &A);
+void printMatrix(const Matrix &A);
 
-matrix transpose(matrix &A);
+Matrix transpose(Matrix &A);
 
-vec multMatrix(const matrix &A, const vec &B);
+vec multMatrix(const Matrix &A, const vec &B);
 
-matrix multMatrix(const matrix &A, const matrix &B);
+Matrix multMatrix(const Matrix &A, const Matrix &B);
 

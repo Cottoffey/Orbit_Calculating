@@ -4,7 +4,7 @@ void RK4(int n, std::vector<double> &x, double &t, double h, PlanetEphemeris *da
 {
     std::vector<double> xmid(n);
     double tmid;
-    double *k = new double[4 * n];
+    auto *k = new double[4 * n];
 
     f(n, x, t, &k[0], data, m);
 
@@ -33,7 +33,7 @@ void DP5(int n, std::vector<double> &x, double &t, double h, PlanetEphemeris *da
 {
     std::vector<double> xmid(n);
     double tmid;
-    double *k = new double[6 * n];
+    auto *k = new double[6 * n];
 
     f(n, x, t, &k[0], data, m);
 
@@ -95,25 +95,25 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
         R = sqrt((X[0] - coors[0]) * (X[0] - coors[0]) + (X[1] - coors[1]) * (X[1] - coors[1]) + (X[2] - coors[2]) * (X[2] - coors[2]));
 
         // dF/dX
-        for (int m = 3; m < 6; m++)
+        for (int j = 3; j < 6; j++)
         {
             for (int k = 0; k < 3; k++)
             {
-                if (m - 3 == k)
-                    F[m * 6 + k] = 86400.L * 86400.L * data[i].GM / (R * R * R) * (6 * (coors[k] - X[k]) * (coors[k] - X[k]) - R) / (R * R * R * R);
+                if (j - 3 == k)
+                    F[j * 6 + k] = 86400.L * 86400.L * data[i].GM / (R * R * R) * (6 * (coors[k] - X[k]) * (coors[k] - X[k]) - R) / (R * R * R * R);
                 else
-                    F[m * 6 + k] = 86400.L * 86400.L * data[i].GM * 6 * (coors[m - 3] - X[m - 3]) * (coors[k] - X[k]) / (R * R * R * R);
+                    F[j * 6 + k] = 86400.L * 86400.L * data[i].GM * 6 * (coors[j - 3] - X[j - 3]) * (coors[k] - X[k]) / (R * R * R * R);
             }
         }
 
-        for (int m = 0; m < 6; m++)
+        for (int j = 0; j < 6; j++)
         {
             for (int h = 0; h < 6; h++)
             {
-                result[6 + m * 6 + h] = 0;
+                result[6 + j * 6 + h] = 0;
                 for (int s = 0; s < 6; s++)
                 {
-                    result[6 + m * 6 + h] += (F[m * 6 + s] * X[6 + s * 6 + h]);
+                    result[6 + j * 6 + h] += (F[j * 6 + s] * X[6 + s * 6 + h]);
                 }
             }
         }
@@ -170,9 +170,9 @@ void modeling(std::vector<double> X, int n, double h, PlanetEphemeris *data, int
         output << std::setprecision (15) << t << ' ';
         for (int i = 0; i < 42; i++)
             output << std::setprecision (15) << X[i] << ' ';
+
         output << std::endl;
         DP5(n, X, t, h, data, m, function);
-        // RK4(6, X, t, h, datas, 10, function);
 
         t += h;
     }
@@ -218,7 +218,7 @@ void creatingModelingValues()
     object.init("Data/ModelOrbit.txt", 0.041666666667);
     sun.init("Data/Sun.txt", 0.041666666667);
 
-    std::cout << "Iniatilization success\n";
+    std::cout << "Initialization success\n";
 
     std::ifstream input("Data/ObservData.txt");
     std::ofstream output("Data/ModelingData.txt");
