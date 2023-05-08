@@ -9,8 +9,8 @@ class GaussNewton {
     vec y; // observations
     vec times;
     vec params; // parameters
-    vec residual;
-    Matrix jacobian; // jacobianT * jacobian
+    vec res_vec;
+    Matrix grad_f; // jacobianT * grad_f
     PlanetEphemeris *datas;
 public:
 

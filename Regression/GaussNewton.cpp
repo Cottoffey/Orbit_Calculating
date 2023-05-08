@@ -3,9 +3,9 @@
 
 GaussNewton::GaussNewton(int p_num, PlanetEphemeris *datas) : p_num(p_num), params(p_num), datas(datas), y(444),
                                                               times(222) {
-    jacobian.resize(y.size());
-    residual.resize(y.size());
-    for (auto &row: jacobian)
+    grad_f.resize(p_num);
+    res_vec.resize(p_num);
+    for (auto &row: grad_f)
         row.resize(p_num);
 
 
@@ -47,18 +47,15 @@ void GaussNewton::matrices_calculation() {
 
         Matrix drdb = multMatrix(g_deriv, x_deriv); // dr / db = dg/df * dx/db
 
-        // Filling jacobian
+        model_values >> tmp >> tmp >> tmp >> ra >> dec;
         for (int j = 0; j < p_num; ++j) {
-            jacobian[i * 2][j] = -drdb[0][j];     // d(ra) / db
-            jacobian[i * 2 + 1][j] = -drdb[1][j]; // d(dec) / db
+            res_vec[j] += drdb[0][j] * ra + drdb[1][j] * dec;
+            for (int k = 0; k < p_num; ++k) {
+                grad_f[j][k] += (drdb[0][j] * drdb[0][k] + drdb[1][j] * drdb[1][k]);
+            }
         }
-
-        model_values >> tmp >> ra >> dec >> tmp >> tmp;
-        residual[i * 2] = (y[i * 2] - ra);                // delta ra
-        residual[i * 2 + 1] = (y[i * 2 + 1] - dec);       // delta dec
     }
     model_values.close();
-
 }
 
 
@@ -69,9 +66,11 @@ vec GaussNewton::fit(const vec &init_state) {
         params[i] = init_state[i];
         std::cout << std::setprecision(15) << params[i] << ' ';
     }
+
+
+    vec X = init_state;
     for (int i = 0; i < 10; ++i) {
         // update X
-        vec X = init_state;
         for (int j = 0; j < p_num; ++j)
             X[j] = params[j];
 
@@ -79,17 +78,15 @@ vec GaussNewton::fit(const vec &init_state) {
         modeling(X, 42, 0.041666666667, datas, 10);
         creatingModelingValues();
         matrices_calculation();
-        Matrix grad = multMatrix(transpose(jacobian), jacobian);
-        vec f_b = multMatrix(transpose(jacobian), residual);
 
-        vec sol = Cholesky::CholeskySLE(grad, f_b);
+        vec sol = Cholesky::CholeskySLE(grad_f, res_vec);
 
         std::cout << "Iteration #" << i + 1 << std::endl;
         std::cout << "Matrix At * A:" << std::endl;
-        printMatrix(grad);
+        printMatrix(grad_f);
 
         std::cout << "At * r:" << std::endl;
-        for (auto &elem: f_b)
+        for (auto &elem: res_vec)
             std::cout << elem << std::endl;
 
         std::cout << "New_params:" << std::endl;
@@ -104,9 +101,10 @@ vec GaussNewton::fit(const vec &init_state) {
 }
 
 void GaussNewton::clear_matrices() {
-    for (int j = 0; j < y.size(); ++j) {
+    for (int j = 0; j < p_num; ++j) {
+        res_vec[j] = 0;
         for (int i = 0; i < p_num; ++i) {
-            jacobian[j][i] = 0;
+            grad_f[j][i] = 0;
         }
     }
 }
