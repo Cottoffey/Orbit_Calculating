@@ -48,6 +48,8 @@ void GaussNewton::matrices_calculation() {
         Matrix drdb = multMatrix(g_deriv, x_deriv); // dr / db = dg/df * dx/db
 
         model_values >> tmp >> tmp >> tmp >> ra >> dec;
+        // model_values >> tmp >> ra >> dec >> tmp >> tmp;
+
         for (int j = 0; j < p_num; ++j) {
             res_vec[j] += drdb[0][j] * ra + drdb[1][j] * dec;
             for (int k = 0; k < p_num; ++k) {
@@ -71,9 +73,10 @@ vec GaussNewton::fit(const vec &init_state) {
     vec X = init_state;
     for (int i = 0; i < 10; ++i) {
         // update X
+        X = init_state;
         for (int j = 0; j < p_num; ++j)
             X[j] = params[j];
-
+        
         clear_matrices();
         modeling(X, 42, 0.041666666667, datas, 10);
         creatingModelingValues();

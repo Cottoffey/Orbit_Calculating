@@ -7,5 +7,6 @@ creatingModelValues.o: creatingModelValues.cpp Ephemeris.h creatingModelValues.h
 processingObservingData: processingObservingData.cpp Ephemeris.h
 	g++ processingObservingData.cpp -l:libsofa_c.a -o processingObservingData
 	
-
+clean:
+	rm *.o main
 regression_src = Regression/Cholesky.cpp Regression/GaussNewton.cpp Regression/Matrix.cpp
