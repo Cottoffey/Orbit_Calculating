@@ -1,10 +1,10 @@
-#include <sofa.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <vector>
 #include <iomanip>
 
+#include "sofa/c/src/sofa.h"
 #include "Ephemeris.h"
 
 #define EARTH_RADIUS 6378.140 // km
