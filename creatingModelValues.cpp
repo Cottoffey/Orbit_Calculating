@@ -148,8 +148,12 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
             {
                 result[6 + j * 6 + h] += (F[j * 6 + s] * X[6 + s * 6 + h]);
             }
+            // std::cout << F[j*6 + h] << ' ';
         }
+        // std::cout << std::endl;
     }
+    // std::cout << std::endl;
+
 }
 
 void modeling(std::vector<double> X, int n, double h, PlanetEphemeris *data, int m)
@@ -187,7 +191,7 @@ double LTC(double time, double *obcoors, DataEphemeris &object)
 {
     double X[3];
     double delta = 0;
-    double prevdelta = 0;
+    double prevdelta = 0, prevprevdelta = 0;
 
     double R;
     object.get_coors(time - delta, X[0], X[1], X[2]);
@@ -196,8 +200,9 @@ double LTC(double time, double *obcoors, DataEphemeris &object)
 
     // Fixed-point method
     int i = 0;
-    while (fabs(delta - prevdelta) / delta > 1e-15)
+    while (delta != prevdelta && delta != prevprevdelta)
     {
+        prevprevdelta = prevdelta;
         prevdelta = delta;
         object.get_coors(time - delta, X[0], X[1], X[2]);
         R = sqrt((X[0] - obcoors[0]) * (X[0] - obcoors[0]) + (X[1] - obcoors[1]) * (X[1] - obcoors[1]) + (X[2] - obcoors[2]) * (X[2] - obcoors[2]));
