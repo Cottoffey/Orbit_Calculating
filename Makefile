@@ -1,11 +1,11 @@
-all: main.cpp creatingModelValues.o creatingModelValues.h sofa
-	g++ main.cpp $(regression_src) creatingModelValues.o $(sofa_lib) -o main
+all: main.cpp creatingModelValues.o creatingModelValues.h 
+	g++ -std=c++17 main.cpp $(regression_src) creatingModelValues.o $(sofa_lib) -o main
 
-creatingModelValues.o: creatingModelValues.cpp Ephemeris.h creatingModelValues.h sofa
-	g++ creatingModelValues.cpp -l $(sofa_lib) -c
+creatingModelValues.o: creatingModelValues.cpp Ephemeris.h creatingModelValues.h 
+	g++ -std=c++17 creatingModelValues.cpp -l $(sofa_lib) -c
 
 processingObservingData: processingObservingData.cpp Ephemeris.h sofa
-	g++ processingObservingData.cpp -l $(sofa_lib) -o processingObservingData
+	g++ -std=c++17 processingObservingData.cpp -l $(sofa_lib) -o processingObservingData
 clean:
 	rm -f *.o main
 
