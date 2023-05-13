@@ -1,12 +1,13 @@
-all: main.cpp creatingModelValues.o creatingModelValues.h 
-	g++ main.cpp $(regression_src) creatingModelValues.o -l:libsofa_c.a -o main
+all: main.cpp creatingModelValues.o creatingModelValues.h sofa
+	g++ main.cpp $(regression_src) creatingModelValues.o $(sofa_lib) -o main
 
-creatingModelValues.o: creatingModelValues.cpp Ephemeris.h creatingModelValues.h
-	g++ creatingModelValues.cpp -l:libsofa_c.a -c 
+creatingModelValues.o: creatingModelValues.cpp Ephemeris.h creatingModelValues.h sofa
+	g++ creatingModelValues.cpp $(sofa_lib) -c
 
-processingObservingData: processingObservingData.cpp Ephemeris.h
-	g++ processingObservingData.cpp -l:libsofa_c.a -o processingObservingData
-	
+processingObservingData: processingObservingData.cpp Ephemeris.h sofa
+	g++ processingObservingData.cpp $(sofa_lib) -o processingObservingData
 clean:
 	rm *.o main
+
 regression_src = Regression/Cholesky.cpp Regression/GaussNewton.cpp Regression/Matrix.cpp
+sofa_lib = sofa/c/src/libsofa_c.a
