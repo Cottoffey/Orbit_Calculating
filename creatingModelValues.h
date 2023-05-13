@@ -1,5 +1,4 @@
 #pragma once
-#include <sofa.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -8,6 +7,7 @@
 #include <iomanip>
 
 #include "Ephemeris.h"
+#include "sofa/c/src/sofa.h"
 
 #define LSD 25902068371.2000 // light speed in km/day
 #define LS 299792.458        // light speed in km/s
