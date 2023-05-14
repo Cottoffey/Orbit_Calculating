@@ -161,7 +161,7 @@ void modeling(std::vector<double> X, int n, double h, PlanetEphemeris *data, int
     std::cout.setf(std::ios::scientific);
 
     // start time in Julian format
-    double t = 2458040.937500000;
+    double t = 2458040.916666667;
 
     std::ofstream output("Data/ModelOrbit.txt");
     output.setf(std::ios::scientific);

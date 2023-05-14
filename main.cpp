@@ -32,8 +32,8 @@ int main() {
 
     PlanetEphemeris datas[10] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury, moon};
     // start parameters x,y,z,vx,vy,vz
-    std::vector<double> X = {1.469591208242925E+08, 7.299762167917201E+07, 2.056299266163284E+07, 
-                             3.859428549646102E+06, 3.244525935598258E+05, 1.492020244998816E+06,
+    std::vector<double> X = {1.468787090096414E+08,  7.299085877471100E+07,  2.053190793311784E+07, 
+                             3.860105756034324E+06,  3.247863089146682E+05,  1.492113690745696E+06,
                              1, 0, 0, 0, 0, 0,
                              0, 1, 0, 0, 0, 0,
                              0, 0, 1, 0, 0, 0,

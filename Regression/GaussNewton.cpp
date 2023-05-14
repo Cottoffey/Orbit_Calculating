@@ -73,7 +73,7 @@ vec GaussNewton::fit(const vec &init_state) {
 
 
     vec X = init_state;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 3; ++i) {
         // update X
         for (int j = 0; j < p_num; ++j)
             X[j] = params[j];
