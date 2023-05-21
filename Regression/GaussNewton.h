@@ -7,6 +7,7 @@
 class GaussNewton {
     int p_num; // number of parameters
     vec y; // observations
+    vec obcoors;
     vec times;
     vec params; // parameters
     vec residual;

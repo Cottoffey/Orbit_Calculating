@@ -161,7 +161,7 @@ void modeling(std::vector<double> X, int n, double h, PlanetEphemeris *data, int
     std::cout.setf(std::ios::scientific);
 
     // start time in Julian format
-    double t = 2458040.916666667;
+    double t = 2458040.937500000;
 
     std::ofstream output("Data/ModelOrbit.txt");
     output.setf(std::ios::scientific);
@@ -210,6 +210,7 @@ double LTC(double time, double *obcoors, DataEphemeris &object)
         i++;
     }
 
+    
     // std::cout << i << ' ' << delta << std::endl;
 
     return delta;
@@ -221,9 +222,9 @@ void creatingModelingValues()
     PlanetEphemeris sun;
     PlanetEphemeris earth;
 
-    earth.init("Data/Earth.txt", 0.041666666667);
-    object.init("Data/ModelOrbit.txt", 0.041666666667);
-    sun.init("Data/Sun.txt", 0.041666666667);
+    earth.init("Data/Earth.txt", 0.0013888889);
+    object.init("Data/ModelOrbit.txt", 0.0013888889);
+    sun.init("Data/Sun.txt", 0.0013888889);
 
     std::cout << "Creating model values: Initialization success\n";
 
@@ -235,7 +236,7 @@ void creatingModelingValues()
     double ocoors[3];  // object coors
     double obcoors[3]; // observer coors
     double scoors[3];  // sun coors
-    double p[3], q[3], e[3], p1[3], lp = 0, lq = 0, le = 0;
+    double p[3], q[3], e[3], p1[3], lp, lq, le;
     double em;
     double tmp1, tmp;
 
@@ -249,6 +250,7 @@ void creatingModelingValues()
         sun.get_coors(time, scoors[0], scoors[1], scoors[2]);
 
         // initialization for calling iauLd
+        lp = 0, lq = 0, le = 0;
         for (int i = 0; i < 3; i++)
         {
             p[i] = ocoors[i] - obcoors[i];
@@ -259,29 +261,29 @@ void creatingModelingValues()
             le += e[i] * e[i];
         }
 
-        lp = sqrt(lp);
-        lq = sqrt(lq);
-        le = sqrt(le);
+        // lp = sqrt(lp);
+        // lq = sqrt(lq);
+        // le = sqrt(le);
 
-        for (int i = 0; i < 3; i++)
-        {
-            p[i] = p[i] / lp;
-            q[i] = q[i] / lq;
-            e[i] = e[i] / le;
-        }
-        em = sqrt((scoors[0] - obcoors[0]) * (scoors[0] - obcoors[0]) + (scoors[1] - obcoors[1]) * (scoors[1] - obcoors[1]) + (scoors[2] - obcoors[2]) * (scoors[2] - obcoors[2])) * KM_TO_AU;
+        // for (int i = 0; i < 3; i++)
+        // {
+        //     p[i] = p[i] / lp;
+        //     q[i] = q[i] / lq;
+        //     e[i] = e[i] / le;
+        // }
+        // em = sqrt((scoors[0] - obcoors[0]) * (scoors[0] - obcoors[0]) + (scoors[1] - obcoors[1]) * (scoors[1] - obcoors[1]) + (scoors[2] - obcoors[2]) * (scoors[2] - obcoors[2])) * KM_TO_AU;
         
-        iauLd(1, p, q, e, em, 0, p1);
-        // Aberation
-        double v[3], lv = 0;
-        earth.get_speed(time, v[0], v[1], v[2]);
-        for (int i = 0; i < 3; i++)
-        {
-            v[i] = v[i] / LSD;
-            lv += v[i] * v[i];
-        }
+        // iauLd(1, p, q, e, em, 0, p1);
+        // // Aberation
+        // double v[3], lv = 0;
+        // earth.get_speed(time, v[0], v[1], v[2]);
+        // for (int i = 0; i < 3; i++)
+        // {
+        //     v[i] = v[i] / LSD;
+        //     lv += v[i] * v[i];
+        // }
 
-        iauAb(p1, v, em, sqrt(1 - lv), p);
+        // iauAb(p1, v, em, sqrt(1 - lv), p);
         
         // to spherical
         double ra, dec;

@@ -33,8 +33,7 @@ public:
         while (!input.eof())
         {
             input >> tmp.t >> tmp.x >> tmp.y >> tmp.z;
-            if (filename != "Data/RealOrbit.txt")
-                input >> tmp.vx >> tmp.vy >> tmp.vz;
+            input >> tmp.vx >> tmp.vy >> tmp.vz;
             data.push_back(tmp);
         }
 
@@ -179,7 +178,7 @@ public:
         // int i = 0;
         // while (time > data[i].t)
         //     i++;
-        int i = (int)((time - 2458040.916666667) / step) + 1;
+        int i = (int)((time - 2458040.937500000) / step) + 1;
         if (i == 0)
         {
             x = data[0].x;
@@ -195,7 +194,7 @@ public:
 
     void get_speed (double time, double &vx, double &vy, double &vz)
     {
-        int i = (int)((time - 2458040.916666667) / step) + 1;
+        int i = (int)((time - 2458040.937500000) / step) + 1;
         if (i == 0)
         {
             vx = data[0].vx;
@@ -211,7 +210,7 @@ public:
 
     void get_acceleration (double time, double & ax, double & ay, double & az)
     {
-        int i = (int)((time - 2458040.916666667) / step) + 1;
+        int i = (int)((time - 2458040.937500000) / step) + 1;
         
         ax = (data[i].vx - data[i - 1].vx) / step;
         ay = (data[i].vy - data[i - 1].vy) / step;
@@ -220,7 +219,7 @@ public:
 
     void get_dxdx0 (double time, int index, double &result)
     {
-        int i = (int)((time - 2458040.916666667) / step) + 1;
+        int i = (int)((time - 2458040.937500000) / step) + 1;
         result = (time - data[i - 1].t) * (data[i].dxd0[index] - data[i - 1].dxd0[index]) / (data[i].t - data[i - 1].t) + data[i - 1].dxd0[index];
     }
 };

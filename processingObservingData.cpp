@@ -34,8 +34,8 @@ void ProcessObservingData ()
     TimeEphemeris TT_TDB;
     PlanetEphemeris Hubble;
     
-    Hubble.init ("Data/Hubble.txt", 0.041666666667);
-    Earth.init ("Data/Earth.txt", 0.041666666667);
+    Hubble.init ("Data/Hubble.txt", 0.0013888889);
+    Earth.init ("Data/Earth.txt", 0.0013888889);
     TT_TDB.init ("Data/TDB.txt");
 
     for (int i = 0; i < 222; i++)
@@ -67,7 +67,7 @@ void ProcessObservingData ()
         
         if (currentTT.fd >= 1.0)
         {
-            currentTT.d = currentTT.d + (int)currentTT.fd;
+            currentTT.d = currentTT.d + 1;
             currentTT.fd = currentTT.fd - 1.0;
         }
 
@@ -75,12 +75,12 @@ void ProcessObservingData ()
 
         // adding h, mn, s, ms
         current.h = (int)(current.fd * 24);
-        current.mn = (current.fd * 24.0 - (int)(current.fd * 24)) * 60;
-        current.s = ((current.fd * 24.0 - (int)(current.fd * 24)) * 60 - (int)((current.fd * 24.0 - (int)(current.fd * 24)) * 60)) * 60;
+        current.mn = (current.fd * 24.0 - current.h) * 60;
+        current.s = ((current.fd * 24.0 - current.h) * 60 - current.mn) * 60;
 
         currentTT.h = (int)(currentTT.fd * 24);
-        currentTT.mn = (currentTT.fd * 24.0 - (int)(currentTT.fd * 24)) * 60;
-        currentTT.s = ((currentTT.fd * 24.0 - (int)(currentTT.fd * 24)) * 60 - (int)((currentTT.fd * 24.0 - (int)(currentTT.fd * 24)) * 60)) * 60;
+        currentTT.mn = (currentTT.fd * 24.0 - currentTT.h) * 60;
+        currentTT.s = ((currentTT.fd * 24.0 - currentTT.h) * 60 - currentTT.mn) * 60;
         
         // to 2-part Julian date
         iauDtf2d("TT", currentTT.y, currentTT.m, currentTT.d, currentTT.h, currentTT.mn, currentTT.s, &TT1, &TT2);

@@ -4,7 +4,11 @@ all: main.cpp creatingModelValues.o creatingModelValues.h libsofa.a
 creatingModelValues.o: creatingModelValues.cpp Ephemeris.h creatingModelValues.h libsofa.a
 	g++ -std=c++17 creatingModelValues.cpp -l  $(sofa_lib) -c
 
+<<<<<<< HEAD
 processingObservingData: processingObservingData.cpp Ephemeris.h libsofa.a
+=======
+processingObservingData: processingObservingData.cpp Ephemeris.h
+>>>>>>> 7e14a1c (Added high percision ephemerises.)
 	g++ -std=c++17 processingObservingData.cpp  $(sofa_lib) -o processingObservingData
 
 libsofa.a:
