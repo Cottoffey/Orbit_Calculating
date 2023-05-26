@@ -1,30 +1,42 @@
 #include "GaussNewton.h"
+#include "../Colors.h"
 
-
-GaussNewton::GaussNewton(int p_num, PlanetEphemeris *datas) : p_num(p_num), params(p_num), datas(datas), y(444),
-                                                              obcoors(666), times(222), residual(444) {
+GaussNewton::GaussNewton(int p_num, PlanetEphemeris *datas) : 
+        p_num(p_num), params(p_num), datas(datas), y(106),
+        obcoors(159), times(53), residual(106) 
+{
     grad_f.resize(p_num);
+
     res_vec.resize(p_num);
     for (auto &row: grad_f)
         row.resize(p_num);
 }
 
-
-void GaussNewton::init() {
+void GaussNewton::init() 
+{
     std::cout.setf(std::ios::scientific);
+
     std::ifstream input_data("Data/ObservData.txt");
+<<<<<<< HEAD
     for (int i = 0; i < 222; ++i) {
 	    // char buffer[140];
+=======
+
+    for (int i = 0; i < 53; ++i) {
+>>>>>>> 74b5e06 (Final)
         input_data >> times[i] >> y[i * 2] >> y[i * 2 + 1] >> obcoors[i * 3] >> obcoors[i * 3 + 1] >> obcoors[i * 3 + 2];
-        // input_data.getline(buffer, 140);
     }
+
     input_data.close();
 }
 
-void GaussNewton::matrices_calculation() {
+void GaussNewton::matrices_calculation() 
+{
     std::ifstream model_values("Data/ModelingData.txt");
+
     double x_coord, y_coord, z_coord;
     double tmp, ra, dec;
+
     // Derivative matrix initialising
     Matrix x_deriv(3);    // d(x, y, z) / db - 3 x p_num
     Matrix g_deriv(2);    // dg / d(x, y, z) - 2 x 3
@@ -34,11 +46,13 @@ void GaussNewton::matrices_calculation() {
         row.resize(3);
 
     DataEphemeris object;
-    object.init("Data/ModelOrbit.txt", 0.0013888889);
+    object.init("Data/ModelOrbit.txt", MODELING_STEP);
 
-    for (int i = 0; i < 222; ++i) {
+    for (int i = 0; i < 53; ++i) {
         object.get_coors(times[i], x_coord, y_coord, z_coord);
-        model_values >> tmp >> ra >> dec >> tmp >> tmp;
+
+        model_values >> tmp >> ra >> dec;
+
         residual[i * 2] = y[i * 2] - ra;
         residual[i * 2 + 1] = y[i * 2 + 1] - dec;
         delta_ra_sum += residual[i * 2] * residual[i * 2];
@@ -46,85 +60,90 @@ void GaussNewton::matrices_calculation() {
 
         // derivatives calculation
         dgdx(x_coord - obcoors[i * 3], y_coord - obcoors[i * 3 + 1], z_coord - obcoors[i * 3 + 2], g_deriv);
-        for (int j = 0; j < 18; ++j)
-            object.get_dxdx0(times[i], j, x_deriv[j / 6][j % 6]);
+        for (int j = 0; j < 21; ++j)
+            object.get_dxdx0(times[i], j, x_deriv[j / 7][j % 7]);
 
         Matrix drdb = multMatrix(g_deriv, x_deriv); // -dr / db = dg/dx * dx/db
 
-        // printMatrix (x_deriv);
-        // std::cout << std::endl;
-
-        for (int j = 0; j < p_num; ++j) {
+        for (int j = 0; j < p_num; ++j) 
+        {
             res_vec[j] -= (drdb[0][j] * residual[i * 2] + drdb[1][j] * residual[i * 2 + 1]);
             for (int k = 0; k < p_num; ++k) {
                 grad_f[j][k] += (drdb[0][j] * drdb[0][k] + drdb[1][j] * drdb[1][k]);
             }
         }
     }
+
     model_values.close();
 }
 
 
-vec GaussNewton::fit(const vec &init_state) {
+vec GaussNewton::fit(const vec &init_state) 
+{
+
     // params initialising
     std::cout << "Initial parameteres:" << std::endl;
-    for (int i = 0; i < p_num; ++i) {
+    for (int i = 0; i < p_num; ++i) 
+    {
         params[i] = init_state[i];
         std::cout << std::setprecision(15) << params[i] << ' ';
     }
-
+    std::cout << '\n' << std::endl;
 
     vec X = init_state;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i) 
+    {
+        std::cout << "Iteration #" << i + 1 << std::endl;
+        
         // update X
         for (int j = 0; j < p_num; ++j)
             X[j] = params[j];
 
         clear_matrices();
-        modeling(X, 42, 0.0013888889, datas, 10);
+        modeling(X, 56, MODELING_STEP, datas, 10);
         creatingModelingValues();
         matrices_calculation();
+        
 
-        std::cout << "residual norm: " << sqrt(delta_ra_sum) << ' ' << sqrt(delta_dec_sum) << std::endl;
+        std::cout << "Residual norm:\n" << "RA = " << sqrt(delta_ra_sum) << "\nDEC = " << sqrt(delta_dec_sum) << '\n' << std::endl;
+
         vec sol = Cholesky::CholeskySLE(grad_f, res_vec);
-        // for (auto elem : sol)
-        //     std::cout << elem << std::endl;
-        // std::cout << "check solution" << std::endl;
-        // vec mod = multMatrix (grad_f, sol);
-        // for (int i = 0 ; i < 6 ; i++)
-        //     std::cout << mod [i] << ' ' << res_vec[i] << std::endl;
 
-        std::cout << "Iteration #" << i + 1 << std::endl;
 
-        std::cout << "Matrix At * A:" << std::endl;
-        printMatrix(grad_f);
-
-        std::cout << "At * r:" << std::endl;
-        for (auto &elem: res_vec)
-            std::cout << elem << std::endl;
-
-        std::cout << "New_params:" << std::endl;
-        for (int j = 0; j < p_num; ++j) {
+        // std::cout << "New_params:" << std::endl;
+        for (int j = 0; j < p_num; ++j) 
+        {
             params[j] -= sol[j];
-            std::cout << params[j] << ' ';
+            // std::cout << params[j] << ' ';
         }
-        std::cout << "\n\n";
+        // std::cout << "\n\n";
     }
+
     return params;
 }
 
-void GaussNewton::clear_matrices() {
+void GaussNewton::clear_matrices() 
+{
     delta_ra_sum = 0;
     delta_dec_sum = 0;
-    for (int j = 0; j < p_num; ++j) {
+
+    for (int j = 0; j < p_num; ++j) 
+    {
         res_vec[j] = 0;
-        for (int i = 0; i < p_num; ++i) {
+        for (int i = 0; i < p_num; ++i) 
             grad_f[j][i] = 0;
-        }
     }
 }
 
+<<<<<<< HEAD
 void GaussNewton::dgdx(double x, double y, double z, Matrix &derivative) {
+=======
+void GaussNewton::dgdx(double x, double y, double z, Matrix &derivative) 
+{
+    derivative.resize(2);
+    derivative[0].resize(3);
+    derivative[1].resize(3);
+>>>>>>> 74b5e06 (Final)
     derivative[0][0] = -y / (x * x + y * y);
     derivative[0][1] = x / (x * x + y * y);
     derivative[0][2] = 0;

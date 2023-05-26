@@ -1,3 +1,14 @@
+#define EPHEMERISES_STEP 0.0013888888
+#define MODELING_STEP 0.041666667
+
+#define LSD 25902068371.2000 // light speed in km/day
+#define LS 299792.458        // light speed in km/s
+#define KM_TO_AU 6.68459e-9  // 1 km = .. au
+
+#define EARTH_RADIUS 6378.140 // km
+#define SEC_DAY 86400.0 
+#define MINSEC_DAY 86400000.0
+
 class PlanetEphemeris 
 {
 public:
@@ -143,7 +154,7 @@ public:
         double vx;
         double vy;
         double vz;
-        double dxd0[36];
+        double dxd0[49];
     };
 
     double step;
@@ -160,11 +171,11 @@ public:
         }
 
         struct format tmp;
-
+        double tp;
         while (!input.eof())
         {
-            input >> tmp.t >> tmp.x >> tmp.y >> tmp.z >> tmp.vx >> tmp.vy >> tmp.vz;
-            for (int i = 0; i < 36; i++)
+            input >> tmp.t >> tmp.x >> tmp.y >> tmp.z >> tmp.vx >> tmp.vy >> tmp.vz >> tp;
+            for (int i = 0; i < 49; i++)
                 input >> tmp.dxd0[i];
             data.push_back(tmp);
         }

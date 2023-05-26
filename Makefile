@@ -1,5 +1,5 @@
-all: main.cpp creatingModelValues.o creatingModelValues.h libsofa.a
-	g++ -std=c++17 main.cpp $(regression_src) creatingModelValues.o $(sofa_lib) -o main
+all: main.cpp creatingModelValues.o processingObservingData.o creatingModelValues.h libsofa.a
+	g++ -std=c++17 main.cpp $(regression_src) creatingModelValues.o processingObservingData.o $(sofa_lib) -o main
 
 creatingModelValues.o: creatingModelValues.cpp Ephemeris.h creatingModelValues.h libsofa.a
 	g++ -std=c++17 creatingModelValues.cpp -l  $(sofa_lib) -c

@@ -7,10 +7,6 @@
 #include "sofa/c/src/sofa.h"
 #include "Ephemeris.h"
 
-#define EARTH_RADIUS 6378.140 // km
-#define SEC_DAY 86400.0 
-#define MINSEC_DAY 86400000.0
-
 void ProcessObservingData ()
 {
     struct Time
@@ -34,11 +30,11 @@ void ProcessObservingData ()
     TimeEphemeris TT_TDB;
     PlanetEphemeris Hubble;
     
-    Hubble.init ("Data/Hubble.txt", 0.0013888889);
-    Earth.init ("Data/Earth.txt", 0.0013888889);
+    Hubble.init ("Data/Hubble.txt", EPHEMERISES_STEP);
+    Earth.init ("Data/Earth.txt", EPHEMERISES_STEP);
     TT_TDB.init ("Data/TDB.txt");
 
-    for (int i = 0; i < 222; i++)
+    for (int i = 0; i < 53; i++)
     {
         Time current;
         input >> current.y >> current.m >> current.fd;
@@ -52,7 +48,7 @@ void ProcessObservingData ()
         double radCoors[2];
 
         input >> observCoors[0] >> observCoors[1] >> observCoors[2];
-        radCoors[0] = (observCoors[0] * 15 + observCoors[1] * 0.25 + observCoors[2] * 0.0041666666667) * M_PI / 180;
+        radCoors[0] = (observCoors[0] * 15. + observCoors[1] * 0.25 + observCoors[2] * 0.0041666666667) * M_PI / 180;
         input >> observCoors[0] >> observCoors[1] >> observCoors[2];
         if (observCoors[0] < 0.0)
             radCoors[1] = (observCoors[0] - observCoors[1] / 60 - observCoors[2] / 3600) * M_PI / 180;
@@ -74,11 +70,11 @@ void ProcessObservingData ()
         double TT1, TT2, UT1, UT2;
 
         // adding h, mn, s, ms
-        current.h = (int)(current.fd * 24);
+        current.h = (current.fd * 24);
         current.mn = (current.fd * 24.0 - current.h) * 60;
         current.s = ((current.fd * 24.0 - current.h) * 60 - current.mn) * 60;
 
-        currentTT.h = (int)(currentTT.fd * 24);
+        currentTT.h = (currentTT.fd * 24);
         currentTT.mn = (currentTT.fd * 24.0 - currentTT.h) * 60;
         currentTT.s = ((currentTT.fd * 24.0 - currentTT.h) * 60 - currentTT.mn) * 60;
         
@@ -86,34 +82,29 @@ void ProcessObservingData ()
         iauDtf2d("TT", currentTT.y, currentTT.m, currentTT.d, currentTT.h, currentTT.mn, currentTT.s, &TT1, &TT2);
         iauDtf2d("UTC", current.y, current.m, current.d, current.h, current.mn, current.s, &UT1, &UT2);
 
-        std::cout << std::setprecision (15) << i + 1 << ' ' << currentTT.y << ' ' << currentTT.m << ' ' << currentTT.d << ' ' << currentTT.h << ' ' << currentTT.mn << ' ' << currentTT.s << ' ' << TT1+TT2 << std::endl;
         double UT11, UT12;
        
         if ((i > 181 && i < 192) || (i > 196 && i < 202) || i > 206)
         {
             // TT -> TDB
             TT2 -= (TT_TDB.get_dt (TT1 + TT2) / MINSEC_DAY);
-            std::cout << std::setprecision (15) << i + 1 << ' ' << currentTT.y << ' ' << currentTT.m << ' ' << currentTT.d << ' ' << currentTT.h << ' ' << currentTT.mn << ' ' << currentTT.s << ' ' << TT1+TT2 << std::endl;
             Hubble.get_coors (TT1 + TT2, coors[0], coors[1], coors[2]);
         }   
         else
         {
             input >> l >> r >> z >> xp >> yp >> dut1;
+            
             // UTC -> UT1
             iauUtcut1(UT1, UT2, dut1, &UT11, &UT12);
 
             // CylCoors -> DecCoors
-            coors[0] = r * cos(l * M_PI / 180.) * EARTH_RADIUS;
-            coors[1] = r * sin(l * M_PI / 180.) * EARTH_RADIUS;
+            coors[0] = r * cos(l * M_PI / 180. + 0.000024) * EARTH_RADIUS;
+            coors[1] = r * sin(l * M_PI / 180. + 0.000024) * EARTH_RADIUS;
             coors[2] = z * EARTH_RADIUS;
 
-            // std::cout << '\n' << coors[0] << ' '<< coors[1] << ' ' << coors[2] << std::endl;
             // celestial to terrestial matrix
             double rc2t[3][3] = {0};
-            iauC2t06a(TT1, TT2, UT11, UT12, xp / 206265 , yp / 206265, rc2t);
-
-            // for (int i = 0; i < 3; i++)
-            //     std::cout << rc2t[i][0] << ' ' << rc2t[i][1] << ' '<< rc2t[i][2] << std::endl;
+            iauC2t06a(TT1, TT2, UT11, UT12, xp / 206265. , yp / 206265., rc2t);
 
             double tmpx = coors[0], tmpy = coors[1], tmpz = coors[2];
 
@@ -121,14 +112,12 @@ void ProcessObservingData ()
             coors[1] = tmpx * rc2t[0][1] + tmpy * rc2t[1][1] + tmpz * rc2t[2][1];
             coors[2] = tmpx * rc2t[0][2] + tmpy * rc2t[1][2] + tmpz * rc2t[2][2];
 
-            // std::cout << '\n' << coors[0] << ' '<< coors[1] << ' ' << coors[2] << std::endl;
             // TT -> TDB
             TT2 -= (TT_TDB.get_dt (TT1 + TT2) / MINSEC_DAY);
-            std::cout << std::setprecision (15) << i + 1 << ' ' << currentTT.y << ' ' << currentTT.m << ' ' << currentTT.d << ' ' << currentTT.h << ' ' << currentTT.mn << ' ' << currentTT.s << ' ' << TT1+TT2 << std::endl;
 
             // position with Earth
             Earth.get_coors (TT1 + TT2, tmpx, tmpy, tmpz);
-
+            
             coors[0] = coors[0] + tmpx;
             coors[1] = coors[1] + tmpy;
             coors[2] = coors[2] + tmpz;
@@ -144,10 +133,3 @@ void ProcessObservingData ()
     return;
 }
 
-
-int main ()
-{
-    ProcessObservingData ();
-
-    return -0;
-}

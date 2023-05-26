@@ -76,18 +76,22 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
     result[3] = 0.0;
     result[4] = 0.0;
     result[5] = 0.0;
+    result[6] = 0.0;
 
     double coors[3], R, RC, cc[3];
 
     double tmp1, tmp2, v[3], a[3], u[3];
 
+    double selfa[3];
+
     // dF/dX
-    double F[36] = {0, 0, 0, 1, 0, 0,
-                    0, 0, 0, 0, 1, 0,
-                    0, 0, 0, 0, 0, 1,
-                    0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0};
+    double F[49] = {0, 0, 0, 1, 0, 0, 0,  // dvx
+                    0, 0, 0, 0, 1, 0, 0,  // dvy
+                    0, 0, 0, 0, 0, 1, 0,  // dvz
+                    0, 0, 0, 0, 0, 0, 0,  // dax
+                    0, 0, 0, 0, 0, 0, 0,  // day
+                    0, 0, 0, 0, 0, 0, 0,  // daz
+                    0, 0, 0, 0, 0, 0, 0}; // da
 
     for (int i = 0; i < m; i++)
     {
@@ -100,13 +104,21 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
             for (int k = 0; k < 3; k++)
             {
                 if (j - 3 == k)
-                    F[j * 6 + k] -= (86400.L * 86400.L * data[i].GM  * (1./ (R * R * R) - 3 * (coors[k] - X[k]) * (coors[k] - X[k]) / (R * R * R * R * R)));
+                    F[j * 7 + k] -= (86400.L * 86400.L * data[i].GM * (1. / (R * R * R) - 3 * (coors[k] - X[k]) * (coors[k] - X[k]) / (R * R * R * R * R))) - 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R);
                 else
-                    F[j * 6 + k] += (86400.L * 86400.L * data[i].GM * 3 * (coors[j - 3] - X[j - 3]) * (coors[k] - X[k]) / (R * R * R * R * R));
+                    F[j * 7 + k] += (86400.L * 86400.L * data[i].GM * 3 * (coors[j - 3] - X[j - 3]) * (coors[k] - X[k]) / (R * R * R * R * R)) - 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R);
             }
         }
 
-        
+        if (i == 0)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                selfa[j] = (coors[j] - X[j]) / R;
+                F[(j + 3) * 7 + 6] = selfa[j] / (R * KM_TO_AU * R * KM_TO_AU);
+                result[j + 3] += selfa[j] * X[6] / (R * KM_TO_AU * R * KM_TO_AU);
+            }
+        }
 
         data[i].get_speed(t, v[0], v[1], v[2]);
         data[i].get_acceleration(t, a[0], a[1], a[2]);
@@ -138,22 +150,18 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
         for (int j = 3; j < 6; j++)
             result[j] = result[j] - 86400.L * 86400.L * data[i].GM * u[j - 3] / (R * R) - 86400.L * 86400.L * data[i].GM * u[j - 3] * tmp1 / (R * R * LSD * LSD) + 86400.L * 86400.L * data[i].GM * tmp2 * (X[j] - v[j - 3]) / (R * R * LSD * LSD) + 7 * 86400.L * 86400.L * data[i].GM * a[j - 3] / (R * 2 * LSD * LSD);
     }
-    
-    for (int j = 0; j < 6; j++)
-    {
-        for (int h = 0; h < 6; h++)
-        {
-            result[6 + j * 6 + h] = 0;
-            for (int s = 0; s < 6; s++)
-            {
-                result[6 + j * 6 + h] += (F[j * 6 + s] * X[6 + s * 6 + h]);
-            }
-            // std::cout << F[j*6 + h] << ' ';
-        }
-        // std::cout << std::endl;
-    }
-    // std::cout << std::endl;
 
+    for (int j = 0; j < 7; j++)
+    {
+        for (int h = 0; h < 7; h++)
+        {
+            result[7 + j * 7 + h] = 0;
+            for (int s = 0; s < 7; s++)
+            {
+                result[7 + j * 7 + h] += (F[j * 7 + s] * X[7 + s * 7 + h]);
+            }
+        }
+    }
 }
 
 void modeling(std::vector<double> X, int n, double h, PlanetEphemeris *data, int m)
@@ -170,14 +178,11 @@ void modeling(std::vector<double> X, int n, double h, PlanetEphemeris *data, int
 
     while (t < 2458123.916666667)
     {
-        // RealOrbit.get_coors (t, x, y, z);
-        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[0] - x << ' ' << X[1] - y << ' ' <<  X[2] - z <<  std::endl;
-        // output << std::setprecision(15) << t << ' ' << X[0] << ' ' << X[1] << ' ' << X[2] << ' ' << X[3] << ' ' << X[4] << ' ' << X[5] << std::endl;
-        output << std::setprecision (15) << t << ' ';
-        for (int i = 0; i < 42; i++)
-            output << std::setprecision (15) << X[i] << ' ';
-
+        output << std::setprecision(15) << t << ' ';
+        for (int i = 0; i < 56; i++)
+            output << std::setprecision(15) << X[i] << ' ';
         output << std::endl;
+
         DP5(n, X, t, h, data, m, function);
 
         t += h;
@@ -204,14 +209,12 @@ double LTC(double time, double *obcoors, DataEphemeris &object)
     {
         prevprevdelta = prevdelta;
         prevdelta = delta;
+        
         object.get_coors(time - delta, X[0], X[1], X[2]);
         R = sqrt((X[0] - obcoors[0]) * (X[0] - obcoors[0]) + (X[1] - obcoors[1]) * (X[1] - obcoors[1]) + (X[2] - obcoors[2]) * (X[2] - obcoors[2]));
         delta = R / LSD;
         i++;
     }
-
-    
-    // std::cout << i << ' ' << delta << std::endl;
 
     return delta;
 }
@@ -221,12 +224,12 @@ void creatingModelingValues()
     DataEphemeris object;
     PlanetEphemeris sun;
     PlanetEphemeris earth;
+    PlanetEphemeris hubble;
 
-    earth.init("Data/Earth.txt", 0.0013888889);
-    object.init("Data/ModelOrbit.txt", 0.0013888889);
-    sun.init("Data/Sun.txt", 0.0013888889);
-
-    std::cout << "Creating model values: Initialization success\n";
+    hubble.init("Data/Hubble.txt", EPHEMERISES_STEP);
+    earth.init("Data/Earth.txt", EPHEMERISES_STEP);
+    object.init("Data/ModelOrbit.txt", MODELING_STEP);
+    sun.init("Data/Sun.txt", EPHEMERISES_STEP);
 
     std::ifstream input("Data/ObservData.txt");
     std::ofstream output("Data/ModelingData.txt");
@@ -240,13 +243,11 @@ void creatingModelingValues()
     double em;
     double tmp1, tmp;
 
-    for (int j = 0; j < 222; j++)
+    for (int j = 0; j < 53; j++)
     {
         input >> time >> tmp1 >> tmp >> obcoors[0] >> obcoors[1] >> obcoors[2];
 
-        time -= LTC(time, obcoors, object);
-        // earth.get_coors (time, obcoors[0], obcoors[1], obcoors[2]);
-        object.get_coors(time, ocoors[0], ocoors[1], ocoors[2]);
+        object.get_coors(time  - LTC(time, obcoors, object), ocoors[0], ocoors[1], ocoors[2]);
         sun.get_coors(time, scoors[0], scoors[1], scoors[2]);
 
         // initialization for calling iauLd
@@ -261,40 +262,28 @@ void creatingModelingValues()
             le += e[i] * e[i];
         }
 
-        // lp = sqrt(lp);
-        // lq = sqrt(lq);
-        // le = sqrt(le);
+        lp = sqrt(lp);
+        lq = sqrt(lq);
+        le = sqrt(le);
 
-        // for (int i = 0; i < 3; i++)
-        // {
-        //     p[i] = p[i] / lp;
-        //     q[i] = q[i] / lq;
-        //     e[i] = e[i] / le;
-        // }
-        // em = sqrt((scoors[0] - obcoors[0]) * (scoors[0] - obcoors[0]) + (scoors[1] - obcoors[1]) * (scoors[1] - obcoors[1]) + (scoors[2] - obcoors[2]) * (scoors[2] - obcoors[2])) * KM_TO_AU;
-        
-        // iauLd(1, p, q, e, em, 0, p1);
-        // // Aberation
-        // double v[3], lv = 0;
-        // earth.get_speed(time, v[0], v[1], v[2]);
-        // for (int i = 0; i < 3; i++)
-        // {
-        //     v[i] = v[i] / LSD;
-        //     lv += v[i] * v[i];
-        // }
+        for (int i = 0; i < 3; i++)
+        {
+            p[i] = p[i] / lp;
+            q[i] = q[i] / lq;
+            e[i] = e[i] / le;
+        }
+        em = sqrt((scoors[0] - obcoors[0]) * (scoors[0] - obcoors[0]) + (scoors[1] - obcoors[1]) * (scoors[1] - obcoors[1]) + (scoors[2] - obcoors[2]) * (scoors[2] - obcoors[2])) * KM_TO_AU;
 
-        // iauAb(p1, v, em, sqrt(1 - lv), p);
-        
+        iauLd(1, p, q, e, em, 0, p);
+
         // to spherical
         double ra, dec;
         iauC2s(p, &ra, &dec);
         if (ra < 0.0)
             ra = 2 * M_PI + ra;
 
-        output << std::setprecision(15) << time << ' ' << ra << ' ' << dec << ' ' << ((fabs(tmp1 - ra) > M_PI) ? (fabs(tmp1 - ra) - M_PI) : fabs(tmp1 - ra)) << ' ' << ((fabs(tmp - dec) > M_PI) ? (fabs(tmp - dec) - M_PI) : fabs(tmp - dec)) << std::endl;
-        // output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << std::endl;
+        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec <<  std::endl;
     }
-    std::cout << "Creating model values: success\n";
 
     input.close();
     output.close();
