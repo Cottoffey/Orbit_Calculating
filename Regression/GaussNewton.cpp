@@ -17,13 +17,8 @@ void GaussNewton::init()
     std::cout.setf(std::ios::scientific);
 
     std::ifstream input_data("Data/ObservData.txt");
-<<<<<<< HEAD
-    for (int i = 0; i < 222; ++i) {
-	    // char buffer[140];
-=======
 
     for (int i = 0; i < 53; ++i) {
->>>>>>> 74b5e06 (Final)
         input_data >> times[i] >> y[i * 2] >> y[i * 2 + 1] >> obcoors[i * 3] >> obcoors[i * 3 + 1] >> obcoors[i * 3 + 2];
     }
 
@@ -135,15 +130,11 @@ void GaussNewton::clear_matrices()
     }
 }
 
-<<<<<<< HEAD
-void GaussNewton::dgdx(double x, double y, double z, Matrix &derivative) {
-=======
 void GaussNewton::dgdx(double x, double y, double z, Matrix &derivative) 
 {
     derivative.resize(2);
     derivative[0].resize(3);
     derivative[1].resize(3);
->>>>>>> 74b5e06 (Final)
     derivative[0][0] = -y / (x * x + y * y);
     derivative[0][1] = x / (x * x + y * y);
     derivative[0][2] = 0;
