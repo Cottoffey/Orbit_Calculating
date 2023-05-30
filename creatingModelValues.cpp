@@ -76,7 +76,6 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
     result[3] = 0.0;
     result[4] = 0.0;
     result[5] = 0.0;
-    result[6] = 0.0;
 
     double coors[3], R, RC, cc[3];
 
@@ -85,13 +84,12 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
     double selfa[3];
 
     // dF/dX
-    double F[49] = {0, 0, 0, 1, 0, 0, 0,  // dvx
-                    0, 0, 0, 0, 1, 0, 0,  // dvy
-                    0, 0, 0, 0, 0, 1, 0,  // dvz
-                    0, 0, 0, 0, 0, 0, 0,  // dax
-                    0, 0, 0, 0, 0, 0, 0,  // day
-                    0, 0, 0, 0, 0, 0, 0,  // daz
-                    0, 0, 0, 0, 0, 0, 0}; // da
+    double F[36] = {0, 0, 0, 1, 0, 0,  // dvx
+                    0, 0, 0, 0, 1, 0,  // dvy
+                    0, 0, 0, 0, 0, 1,  // dvz
+                    0, 0, 0, 0, 0, 0,  // dax
+                    0, 0, 0, 0, 0, 0,  // day
+                    0, 0, 0, 0, 0, 0}; // daz
 
     for (int i = 0; i < m; i++)
     {
@@ -104,19 +102,9 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
             for (int k = 0; k < 3; k++)
             {
                 if (j - 3 == k)
-                    F[j * 7 + k] -= (86400.L * 86400.L * data[i].GM * (1. / (R * R * R) - 3 * (coors[k] - X[k]) * (coors[k] - X[k]) / (R * R * R * R * R)) + 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R));
+                    F[j * 6+ k] -= (86400.L * 86400.L * data[i].GM * (1. / (R * R * R) - 3 * (coors[k] - X[k]) * (coors[k] - X[k]) / (R * R * R * R * R)));
                 else
-                    F[j * 7 + k] += (86400.L * 86400.L * data[i].GM * 3 * (coors[j - 3] - X[j - 3]) * (coors[k] - X[k]) / (R * R * R * R * R) - 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R));
-            }
-        }
-
-        if (i == 0)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                selfa[j] = (coors[j] - X[j]) / R;
-                F[(j + 3) * 7 + 6] = selfa[j] / (R * KM_TO_AU * R * KM_TO_AU);
-                result[j + 3] += selfa[j] * X[6] / (R * KM_TO_AU * R * KM_TO_AU);
+                    F[j * 6+ k] += (86400.L * 86400.L * data[i].GM * 3 * (coors[j - 3] - X[j - 3]) * (coors[k] - X[k]) / (R * R * R * R * R));
             }
         }
 
@@ -151,14 +139,14 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
             result[j] = result[j] - 86400.L * 86400.L * data[i].GM * u[j - 3] / (R * R) - 86400.L * 86400.L * data[i].GM * u[j - 3] * tmp1 / (R * R * LSD * LSD) + 86400.L * 86400.L * data[i].GM * tmp2 * (X[j] - v[j - 3]) / (R * R * LSD * LSD) + 7 * 86400.L * 86400.L * data[i].GM * a[j - 3] / (R * 2 * LSD * LSD);
     }
 
-    for (int j = 0; j < 7; j++)
+    for (int j = 0; j < 6; j++)
     {
-        for (int h = 0; h < 7; h++)
+        for (int h = 0; h < 6; h++)
         {
-            result[7 + j * 7 + h] = 0;
-            for (int s = 0; s < 7; s++)
+            result[6 + j * 6 + h] = 0;
+            for (int s = 0; s < 6; s++)
             {
-                result[7 + j * 7 + h] += (F[j * 7 + s] * X[7 + s * 7 + h]);
+                result[6 + j * 6 + h] += (F[j * 6 + s] * X[6 + s * 6 + h]);
             }
         }
     }
@@ -179,7 +167,7 @@ void modeling(std::vector<double> X, int n, double h, PlanetEphemeris *data, int
     while (t < 2458123.916666667)
     {
         output << std::setprecision(15) << t << ' ';
-        for (int i = 0; i < 56; i++)
+        for (int i = 0; i < 42; i++)
             output << std::setprecision(15) << X[i] << ' ';
         output << std::endl;
 
@@ -282,7 +270,7 @@ void creatingModelingValues()
         if (ra < 0.0)
             ra = 2 * M_PI + ra;
 
-        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec <<  std::endl;
+        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << ' ' << tmp1 - ra << ' ' << tmp - dec <<  std::endl;
     }
 
     input.close();

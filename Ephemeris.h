@@ -174,8 +174,8 @@ public:
         double tp;
         while (!input.eof())
         {
-            input >> tmp.t >> tmp.x >> tmp.y >> tmp.z >> tmp.vx >> tmp.vy >> tmp.vz >> tp;
-            for (int i = 0; i < 49; i++)
+            input >> tmp.t >> tmp.x >> tmp.y >> tmp.z >> tmp.vx >> tmp.vy >> tmp.vz;
+            for (int i = 0; i < 36; i++)
                 input >> tmp.dxd0[i];
             data.push_back(tmp);
         }

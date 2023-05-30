@@ -46,7 +46,7 @@ void GaussNewton::matrices_calculation()
     for (int i = 0; i < 53; ++i) {
         object.get_coors(times[i], x_coord, y_coord, z_coord);
 
-        model_values >> tmp >> ra >> dec;
+        model_values >> tmp >> ra >> dec >> tmp >> tmp;
 
         residual[i * 2] = y[i * 2] - ra;
         residual[i * 2 + 1] = y[i * 2 + 1] - dec;
@@ -55,8 +55,8 @@ void GaussNewton::matrices_calculation()
 
         // derivatives calculation
         dgdx(x_coord - obcoors[i * 3], y_coord - obcoors[i * 3 + 1], z_coord - obcoors[i * 3 + 2], g_deriv);
-        for (int j = 0; j < 21; ++j)
-            object.get_dxdx0(times[i], j, x_deriv[j / 7][j % 7]);
+        for (int j = 0; j < 18; ++j)
+            object.get_dxdx0(times[i], j, x_deriv[j / 6][j % 6]);
 
         Matrix drdb = multMatrix(g_deriv, x_deriv); // -dr / db = dg/dx * dx/db
 
@@ -95,7 +95,7 @@ vec GaussNewton::fit(const vec &init_state)
             X[j] = params[j];
 
         clear_matrices();
-        modeling(X, 56, MODELING_STEP, datas, 10);
+        modeling(X, 42, MODELING_STEP, datas, 10);
         creatingModelingValues();
         matrices_calculation();
         

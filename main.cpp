@@ -43,27 +43,24 @@ int main()
     PlanetEphemeris datas[10] = {sun, jupiter, eartht, venus, uranus, neptune, saturn, mars, mercury, moon};
     
     // start parameters x,y,z,vx,vy,vz,a
-    std::vector<double> X = {1.469591208242925E+08,  7.299762167917201E+07,  2.056299266163284E+07,  3.859428549646102E+06,  3.244525935598258E+05,  1.492020244998816E+06, 0,
-                             1, 0, 0, 0, 0, 0, 0,
-                             0, 1, 0, 0, 0, 0, 0,
-                             0, 0, 1, 0, 0, 0, 0,
-                             0, 0, 0, 1, 0, 0, 0,
-                             0, 0, 0, 0, 1, 0, 0,
-                             0, 0, 0, 0, 0, 1, 0,
-                             0, 0, 0, 0, 0, 0, 1,
+    std::vector<double> X = {1.469591208242925E+08,  7.299762167917201E+07,  2.056299266163284E+07,  3.859428549646102E+06,  3.244525935598258E+05,  1.492020244998816E+06,
+                             1, 0, 0, 0, 0, 0,
+                             0, 1, 0, 0, 0, 0,
+                             0, 0, 1, 0, 0, 0,
+                             0, 0, 0, 1, 0, 0,
+                             0, 0, 0, 0, 1, 0,
+                             0, 0, 0, 0, 0, 1
                              };
 
     std::cout << "> Proccesing class initialization" << std::endl;
 
-    GaussNewton gn_solver(7, datas);
+    GaussNewton gn_solver(6, datas);
     gn_solver.init();
     std::cout << FGRN ("Success\n") << std::endl;
 
     std::cout << "\t>> Computation start <<" << std::endl;
 
     vec result = gn_solver.fit(X);
-
-    std::cout << "> Result non-gravital acceleration:\n" << result[6] << std::endl;
 
     std::cout << "\n\t" << FWHT (">> Finish << \n") << std::endl;
 
