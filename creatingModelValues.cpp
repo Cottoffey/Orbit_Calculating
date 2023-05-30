@@ -104,9 +104,9 @@ void function(int n, std::vector<double> &X, const double &t, double *result, Pl
             for (int k = 0; k < 3; k++)
             {
                 if (j - 3 == k)
-                    F[j * 7 + k] -= (86400.L * 86400.L * data[i].GM * (1. / (R * R * R) - 3 * (coors[k] - X[k]) * (coors[k] - X[k]) / (R * R * R * R * R))) - 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R);
+                    F[j * 7 + k] -= (86400.L * 86400.L * data[i].GM * (1. / (R * R * R) - 3 * (coors[k] - X[k]) * (coors[k] - X[k]) / (R * R * R * R * R)) + 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R));
                 else
-                    F[j * 7 + k] += (86400.L * 86400.L * data[i].GM * 3 * (coors[j - 3] - X[j - 3]) * (coors[k] - X[k]) / (R * R * R * R * R)) - 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R);
+                    F[j * 7 + k] += (86400.L * 86400.L * data[i].GM * 3 * (coors[j - 3] - X[j - 3]) * (coors[k] - X[k]) / (R * R * R * R * R) - 4 * selfa[j] * X[6] * (X[j-3] - coors[j-3]) / (R*R*R));
             }
         }
 
