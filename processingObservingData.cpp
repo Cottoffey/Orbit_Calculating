@@ -115,6 +115,19 @@ void ProcessObservingData ()
             // TT -> TDB
             TT2 -= (TT_TDB.get_dt (TT1 + TT2) / MINSEC_DAY);
 
+            double rp[3][3];
+            iauPmat06 (TT1 + TT2, 0.0, rp);
+            tmpx = coors[0], tmpy = coors[1], tmpz = coors[2];
+            coors[0] = tmpx * rp[0][0] + tmpy * rp[0][1] + tmpz * rp[0][2];
+            coors[1] = tmpx * rp[1][0] + tmpy * rp[1][1] + tmpz * rp[1][2];
+            coors[2] = tmpx * rp[2][0] + tmpy * rp[2][1] + tmpz * rp[2][2];
+
+            iauNum06a (TT1 + TT2, 0.0, rp);
+            tmpx = coors[0], tmpy = coors[1], tmpz = coors[2];
+            coors[0] = tmpx * rp[0][0] + tmpy * rp[0][1] + tmpz * rp[0][2];
+            coors[1] = tmpx * rp[1][0] + tmpy * rp[1][1] + tmpz * rp[1][2];
+            coors[2] = tmpx * rp[2][0] + tmpy * rp[2][1] + tmpz * rp[2][2];
+            
             // position with Earth
             Earth.get_coors (TT1 + TT2, tmpx, tmpy, tmpz);
             
