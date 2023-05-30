@@ -239,7 +239,7 @@ void creatingModelingValues()
     double ocoors[3];  // object coors
     double obcoors[3]; // observer coors
     double scoors[3];  // sun coors
-    double p[3], q[3], e[3], p1[3], lp, lq, le;
+    double p[3];
     double em;
     double tmp1, tmp;
 
@@ -251,30 +251,8 @@ void creatingModelingValues()
         sun.get_coors(time, scoors[0], scoors[1], scoors[2]);
 
         // initialization for calling iauLd
-        lp = 0, lq = 0, le = 0;
         for (int i = 0; i < 3; i++)
-        {
             p[i] = ocoors[i] - obcoors[i];
-            q[i] = ocoors[i] - scoors[i];
-            e[i] = obcoors[i] - scoors[i];
-            lp += p[i] * p[i];
-            lq += q[i] * q[i];
-            le += e[i] * e[i];
-        }
-
-        lp = sqrt(lp);
-        lq = sqrt(lq);
-        le = sqrt(le);
-
-        for (int i = 0; i < 3; i++)
-        {
-            p[i] = p[i] / lp;
-            q[i] = q[i] / lq;
-            e[i] = e[i] / le;
-        }
-        em = sqrt((scoors[0] - obcoors[0]) * (scoors[0] - obcoors[0]) + (scoors[1] - obcoors[1]) * (scoors[1] - obcoors[1]) + (scoors[2] - obcoors[2]) * (scoors[2] - obcoors[2])) * KM_TO_AU;
-
-        iauLd(1, p, q, e, em, 0, p);
 
         // to spherical
         double ra, dec;
@@ -282,7 +260,7 @@ void creatingModelingValues()
         if (ra < 0.0)
             ra = 2 * M_PI + ra;
 
-        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec <<  std::endl;
+        output << std::setprecision (15) << time << ' ' << ra << ' ' << dec << ' ' << tmp1 - ra << ' ' << tmp - dec << std::endl;
     }
 
     input.close();

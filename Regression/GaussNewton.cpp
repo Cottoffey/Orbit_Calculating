@@ -46,7 +46,7 @@ void GaussNewton::matrices_calculation()
     for (int i = 0; i < 53; ++i) {
         object.get_coors(times[i], x_coord, y_coord, z_coord);
 
-        model_values >> tmp >> ra >> dec;
+        model_values >> tmp >> ra >> dec >> tmp >> tmp;
 
         residual[i * 2] = y[i * 2] - ra;
         residual[i * 2 + 1] = y[i * 2 + 1] - dec;
